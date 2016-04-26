@@ -9,13 +9,15 @@ public class AiIntermediate : MonoBehaviour {
 
     public float sprintDistance;
 
+	public float	yRange;
+	public float	xRange;
+
     public float normalMovementSpeed;
     public float sprintMovementSpeed;
     [HideInInspector]
     public float slowMovementSpeed;
     [HideInInspector]
     public float fastMovementSpeed;
-
     private int random;
     public float attackTimer;
     private float permentTimer;
@@ -80,7 +82,7 @@ public class AiIntermediate : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (attackTimer > 0)
         {
@@ -149,7 +151,7 @@ public class AiIntermediate : MonoBehaviour {
         }
         else if (enemyNav)
         {
-            //print("EnemyNav");
+            print("EnemyNav");
             MovingPhase(targetObject, normalMovementSpeed + 2);
         }
 
@@ -163,12 +165,12 @@ public class AiIntermediate : MonoBehaviour {
     void MovingPhase(Transform target, float movingSpeed)
     {
         //print(target);
-        if (target.position.y > transform.position.y)
+        if ((target.position.y - yRange) > transform.position.y)
         {
             transform.position += transform.up * movingSpeed * Time.deltaTime;
             movingUp = true;
         }
-        else if (target.position.y < transform.position.y)
+        else if ((target.position.y + yRange) < transform.position.y)
         {
             transform.position += transform.up * -movingSpeed * Time.deltaTime;
             movingUp = false;
@@ -178,12 +180,12 @@ public class AiIntermediate : MonoBehaviour {
             transform.position += transform.up * 0;
         }
 
-        if (target.position.x > transform.position.x)
+		if ((target.position.x - xRange) > transform.position.x)
         {
             transform.position += transform.right * movingSpeed * Time.deltaTime;
             movingRight = true;
         }
-        else if (target.position.x < transform.position.x)
+        else if ((target.position.x + xRange) < transform.position.x)
         {
             transform.position += transform.right * -movingSpeed * Time.deltaTime;
             movingRight = false;
@@ -214,6 +216,9 @@ public class AiIntermediate : MonoBehaviour {
             {
                 enemyTouch = true;
                 _enemy = playerC.gameObject;
+				//targetObject = CreateVectorPoints(playerC.collider);
+				print ("touching enemy");
+				print (enemyTouch);
 
                 if (_enemy.GetComponent<AiIntermediate>().movingUp)
                 {
@@ -319,8 +324,6 @@ public class AiIntermediate : MonoBehaviour {
                         }
                     }
                 }
-                //else
-                //enemyTouch = false;
             }
             else //playerTouch = true
             {
@@ -351,11 +354,9 @@ public class AiIntermediate : MonoBehaviour {
     {
         targetRayCast.transform.localPosition = new Vector3(-1, 0, 0);
         hit = Physics2D.Raycast(targetRayCast.transform.position, -Vector2.right, 2); //check if left is open
-        //hit = Physics2D.BoxCast (targetRayCast.transform.position, new Vector2 (_ownCollider.bounds.min.x - 3, _ownCollider.bounds.min.y), 0, -Vector2.right);
         Debug.DrawRay(targetRayCast.transform.position, -Vector2.right, Color.green, 2);
 
         vectorDestination = new Vector3((_ownCollider.bounds.min.x - 3), _ownCollider.bounds.center.y, 0);
-        //numHits++;
         return hit;
     }
 
@@ -366,8 +367,7 @@ public class AiIntermediate : MonoBehaviour {
         Debug.DrawRay(targetRayCast.transform.position, Vector2.right, Color.red, 2);
 
         vectorDestination = new Vector3((_ownCollider.bounds.min.x + 3), _ownCollider.bounds.center.y, 0);
-
-        //numHits++;
+	
         return hit;
     }
 
@@ -378,7 +378,6 @@ public class AiIntermediate : MonoBehaviour {
         Debug.DrawRay(targetRayCast.transform.position, Vector2.up, Color.black, 2);
 
         vectorDestination = new Vector3(_ownCollider.bounds.min.x, (_ownCollider.bounds.center.y + 4), 0);
-        //numHits++;
         return hit;
     }
 
@@ -389,19 +388,19 @@ public class AiIntermediate : MonoBehaviour {
         Debug.DrawRay(targetRayCast.transform.position, -Vector2.up, Color.yellow, 2);
 
         vectorDestination = new Vector3(_ownCollider.bounds.min.x, (_ownCollider.bounds.center.y - 4), 0);
-        //numHits++;
         return hit;
     }
     void OnCollisionStay2D(Collision2D playerC)
     {
-        if (playerTouch)
+        if (playerTouch) //attacking
         {
             enemyTouch = false;
             _player = playerC.gameObject;
             this.gameObject.GetComponent<EnemiesReceiveDamage>().rb.mass = 5000;
             movingUp = false;
             movingRight = false;
-            if (attackTimer < 1)
+           
+			if (attackTimer < 1)
             {
                 if (playerC.gameObject.GetComponent<PlayerReceivesDamage>() != null)
                 {
@@ -415,9 +414,10 @@ public class AiIntermediate : MonoBehaviour {
         {
             objectNav = true;
         }
-        else if (enemyTouch)
+		else if (enemyTouch || playerC.gameObject.tag == "Enemy")
         {
             //print("HEHE, we're touching");
+			enemyTouch = true;
             objectNav = false;
             enemyNav = true;
         }
@@ -437,6 +437,7 @@ public class AiIntermediate : MonoBehaviour {
         else if (playerC.gameObject.tag == "Enemy")
         {
             enemyTouch = false;
+			print(enemyTouch);
         }
     }
 
@@ -444,7 +445,6 @@ public class AiIntermediate : MonoBehaviour {
     {
         if (_point.tag == "Point")
         {
-            //print("you got there!");
             enemyNav = false;
             enemyTouch = false;
         }

@@ -176,40 +176,40 @@ public class CombatScript : MonoBehaviour
         if (casting = true && restoreTimer == 0)
             casting = false;
 
-        if (casting == true)
-        {
-            //SpellCast animation
-            if (self.GetComponent<PlayerMovement>().moveRight == true)
-            {
-                self.GetComponent<PlayerMovement>().anim.SetBool("CastRight", true);
-                self.GetComponent<PlayerMovement>().anim.SetBool("WalkRight", false);
+        //if (casting == true)
+        //{
+        //    //SpellCast animation
+        //    if (self.GetComponent<PlayerMovement>().moveRight == true)
+        //    {
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastRight", true);
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkRight", false);
 
 
-                self.GetComponent<PlayerMovement>().anim.Play("WalkLeft");
+        //        self.GetComponent<PlayerMovement>().anim.Play("WalkLeft");
 
-            }
-            if (self.GetComponent<PlayerMovement>().moveLeft == true)
-            {
-                self.GetComponent<PlayerMovement>().anim.SetBool("CastLeft", true);
-                self.GetComponent<PlayerMovement>().anim.SetBool("WalkLeft", false);
-                self.GetComponent<PlayerMovement>().anim.Play("WalkRight");
-            }
+        //    }
+        //    if (self.GetComponent<PlayerMovement>().moveLeft == true)
+        //    {
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastLeft", true);
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkLeft", false);
+        //        self.GetComponent<PlayerMovement>().anim.Play("WalkRight");
+        //    }
 
-            if (self.GetComponent<PlayerMovement>().moveUp == true)
-            {
-                self.GetComponent<PlayerMovement>().anim.SetBool("CastUp", true);
-                ;
-                self.GetComponent<PlayerMovement>().anim.SetBool("WalkUp", false);
-                self.GetComponent<PlayerMovement>().anim.Play("WalkDown");
-            }
+        //    if (self.GetComponent<PlayerMovement>().moveUp == true)
+        //    {
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastUp", true);
+        //        ;
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkUp", false);
+        //        self.GetComponent<PlayerMovement>().anim.Play("WalkDown");
+        //    }
 
-            if (self.GetComponent<PlayerMovement>().moveDown == true)
-            {
-                self.GetComponent<PlayerMovement>().anim.SetBool("CastDown", true);
-                self.GetComponent<PlayerMovement>().anim.SetBool("WalkDown", false);
-                self.GetComponent<PlayerMovement>().anim.Play("WalkUp");
-            }
-        }
+        //    if (self.GetComponent<PlayerMovement>().moveDown == true)
+        //    {
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastDown", true);
+        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkDown", false);
+        //        self.GetComponent<PlayerMovement>().anim.Play("WalkUp");
+        //    }
+        //}
 
 
         //switching from melee to range

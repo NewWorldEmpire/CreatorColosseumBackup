@@ -6,10 +6,12 @@ public class SkillSelector : MonoBehaviour {
 
     public GameObject player;
 	public GameObject whiteBox1, whiteBox2, whiteBox3, whiteBox4;
-    
+    //public GameObject oneUnlocked, twoUnlocked, threeUnlocked, fourUnlocked;
+
     void Start()
     {
-        
+        player.GetComponent<CombatScript>().spells = -1;
+        //StartCoroutine (Wait ());
     }
 
     void Update()

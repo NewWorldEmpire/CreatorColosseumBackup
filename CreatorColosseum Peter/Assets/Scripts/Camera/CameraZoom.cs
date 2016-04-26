@@ -23,7 +23,7 @@ public class CameraZoom : MonoBehaviour
 	void Update () 
 	{
 		//camera follow
-		transform.position = Vector3.Lerp (transform.position, new Vector3 (target.position.x, target.position.y, transform.position.z), Time.deltaTime * cameraSpeed);
+		transform.position = Vector3.Lerp (transform.position, new Vector3 (target.position.x, transform.position.y, transform.position.z), Time.deltaTime * cameraSpeed);
 		distance = Vector3.Distance (this.gameObject.transform.position, _player.transform.position);
 		
 		if (_player.GetComponent<CombatScript> ().melee == true)
