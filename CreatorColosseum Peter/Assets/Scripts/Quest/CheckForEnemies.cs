@@ -3,18 +3,27 @@ using System.Collections;
 
 public class CheckForEnemies : MonoBehaviour {
 
-    public GameObject _NPC;
-    public int targetIndex;
-    public GameObject[] enemies;
-    public int counter;
+    public AudioSource music;
+    public AudioClip battleMusic;
+    public AudioClip bossMusic;
+    public GameObject[] enemies;    
+    public GameObject boss;
+    public GameObject bossHealthBar;
+    public float bossWait;
 
-	// Use this for initialization
-	void Start () {
+    int counter;
+    bool bossSpawned;
+    float audio1Volume = 1.0f;
+    float audio2Volume = 0.0f;
+    bool bossMusicPlaying;
+
+    // Use this for initialization
+    void Start () {
 	
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
         counter = 0;
         foreach (GameObject enemy in enemies)
         {
@@ -23,9 +32,51 @@ public class CheckForEnemies : MonoBehaviour {
                 counter++;
                 if (counter == enemies.Length)
                 {
-                    _NPC.GetComponent<TriggerText>().index = targetIndex;
+                    FadeOut();
+                    if (audio1Volume <= 0.1)
+                    {
+                        if (!bossMusicPlaying)
+                        {
+                            bossMusicPlaying = true;
+                            music.clip = bossMusic;
+                            music.Play();
+                        }
+                        FadeIn();
+                    }                    
+
+                    if(!bossSpawned)
+                    {
+                        StartCoroutine(SpawnWait());
+                    }
                 }
             }
         }
 	}
+
+    IEnumerator SpawnWait()
+    {
+        bossSpawned = true;
+        yield return new WaitForSeconds(bossWait);
+        bossHealthBar.SetActive(true);        
+        yield return new WaitForSeconds(bossWait);
+        boss.SetActive(true);
+    }
+
+    void FadeOut()
+    {
+        if (audio1Volume > 0.1)
+        {
+            audio1Volume -= 0.5f * Time.deltaTime;
+            music.volume = audio1Volume;
+        }
+    }
+
+    void FadeIn()
+    {
+        if (audio2Volume < 1)
+        {
+            audio2Volume += 0.25f * Time.deltaTime;
+            music.volume = audio2Volume;
+        }
+    }
 }

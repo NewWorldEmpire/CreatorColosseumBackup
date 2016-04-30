@@ -45,7 +45,7 @@ public class CombatScript : MonoBehaviour
     public Color32 endColor;
     public Image energyBar;
     public GameObject energy;
-    public Transform restorationPrefab;
+    public GameObject restorationPrefab;
     //***calculators**
     float calculator;
     float calculator2;
@@ -717,8 +717,15 @@ public class CombatScript : MonoBehaviour
         if (Input.GetMouseButtonDown(1) && spells == 1 && restoreCoolDown <= 0 && chargeShot <= 0 && attackRate <= 0)   //right click
         {
             au_heal.Play();
-            Rigidbody2D clone;
-            clone = Instantiate(restorationPrefab, transform.position, transform.rotation) as Rigidbody2D;
+           // GameObject clone;
+            //clone = Instantiate(restorationPrefab, transform.position, transform.rotation) as GameObject;
+			//clone.transform.parent = transform;
+			//GameObject childObject = Instantiate(restorationPrefab) as GameObject;
+			//childObject.transform.parent = gameObject.transform;
+
+			GameObject childObject = Instantiate(restorationPrefab, transform.position, transform.rotation) as GameObject;
+			childObject.transform.parent = gameObject.transform;
+
             health += healthRestore;
             if (health > maxHealth)
                 health = maxHealth;

@@ -78,10 +78,10 @@ public class EnemiesReceiveDamage : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (hPTimer <= 0)
-        {
-            hPBar.SetActive(false);
-        }
+        //if (hPTimer <= 0)
+        //{
+        //    hPBar.SetActive(false);
+        //}
         if (hPTimer > 0)
         {
             hPTimer -= 1 * Time.deltaTime;
@@ -111,12 +111,30 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         }
 
         //if health is zero below, object dies
-        if (hp <= 0 && nowDead)
+        if (gameObject.tag == "Boss")
         {
-            dead = true;
-            nowDead = false;
-            gameObject.SetActive(false);
-            //Destroy(gameObject);
+            if (hp <= 0)
+            {
+                dead = true;
+                gameObject.SetActive(false);
+                hPBar.SetActive(false);
+            }
+        }
+        else
+        {
+			if (this.transform.position.x < -100)
+			{
+				gameObject.SetActive(false);
+			}
+            //if health is zero below, object dies
+            if (hp <= 0 && nowDead)
+            {
+                dead = true;
+                nowDead = false;
+				this.transform.position = new Vector3 (-500, 500, 0);
+                
+                //Destroy(gameObject);
+            }
         }
 
         //defense cannot be below 1 or else there will be a glitch
@@ -130,6 +148,12 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         }
 
     }
+	IEnumerator WAIT()
+	{
+		print ("Hello");
+		yield return new WaitForSeconds (0.2f);
+		print ("Now Dead");
+	}
 
     void OnTriggerStay2D(Collider2D col)
     {
