@@ -59,6 +59,8 @@ public class CheckForEnemies : MonoBehaviour {
                 }
             }
         }
+
+		CheckWhoClosest();
 	}
 
     IEnumerator SpawnWait()
@@ -97,6 +99,7 @@ public class CheckForEnemies : MonoBehaviour {
 			if (enemies[index].activeSelf)
 			{
 				tempDistance = (int) enemies[index].GetComponent<AISmall> ().playerDistance;
+				enemies [indexClose].GetComponent<AISmall> ().forceAttack = false;
 
 				if (tempDistance < lowDistance)
 				{

@@ -80,7 +80,7 @@ public class AISmall : MonoBehaviour {
 		playerDistance = Vector3.Distance (targetPlayer.position, transform.position);
 
 		//--------figure out what phase based up playerdistance--------
-		if (playerDistance < 10)
+		if (playerDistance < 10 || forceAttack)
 		{
 			AttackPhase();
 		} 
@@ -103,8 +103,7 @@ public class AISmall : MonoBehaviour {
 	void AttackPhase()
 	{
 		oneAttackPlayer = true;
-		
-		print ("Attack Phase");
+
 		if (playerTouch) 
 		{
 			if (attackTimer < 1)
@@ -122,7 +121,6 @@ public class AISmall : MonoBehaviour {
 
 	void IdlePhase()
 	{
-		print ("Idle");
 
 		if (oneAttackPlayer) 
 		{
@@ -198,7 +196,6 @@ public class AISmall : MonoBehaviour {
 //====================MOVING PHASE=====================
 	void MovePhase(Vector2 destination)
 	{
-		print ("Move Phase");
 		//moving up and down towards destination
 		if (destination.y > transform.position.y)
 		{
