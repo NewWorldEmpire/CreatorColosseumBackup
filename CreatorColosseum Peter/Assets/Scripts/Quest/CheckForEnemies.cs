@@ -11,6 +11,13 @@ public class CheckForEnemies : MonoBehaviour {
     public GameObject bossHealthBar;
     public float bossWait;
 
+	//--------AI Vars------
+	//[HideInInspector]
+	public int	lowDistance;
+	public int	indexClose;
+	public int 	tempDistance;
+
+	//--------------------
     int counter;
     bool bossSpawned;
     float audio1Volume = 1.0f;
@@ -23,7 +30,8 @@ public class CheckForEnemies : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void FixedUpdate () {
+	void FixedUpdate () 
+	{
         counter = 0;
         foreach (GameObject enemy in enemies)
         {
@@ -79,4 +87,25 @@ public class CheckForEnemies : MonoBehaviour {
             music.volume = audio2Volume;
         }
     }
+//--------------checkWhoClosest--------------
+	public void CheckWhoClosest()
+	{
+		lowDistance = 100;
+
+		for (int index = 0; index < enemies.Length; index ++) 
+		{
+			if (enemies[index].activeSelf)
+			{
+				tempDistance = (int) enemies[index].GetComponent<AISmall> ().playerDistance;
+
+				if (tempDistance < lowDistance)
+				{
+					lowDistance = tempDistance;
+					indexClose = index;
+				}
+			}
+		}
+
+		enemies [indexClose].GetComponent<AISmall> ().forceAttack = true;
+	}
 }

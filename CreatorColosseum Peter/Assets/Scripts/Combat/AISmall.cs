@@ -2,24 +2,32 @@
 using System.Collections;
 
 public class AISmall : MonoBehaviour {
-	[HideInInspector]
-	public float targetDistance;
-	public float attackDistance;
-	
-	public float sprintDistance;
-	
-	public float normalMovementSpeed;
-	public float sprintMovementSpeed;
-	[HideInInspector]
-	public float slowMovementSpeed;
-	[HideInInspector]
-	public float fastMovementSpeed;
+
+	static bool oneAttackPlayer;
+
+	static Vector2[] VectorList;
+	static bool[]	VectorBoolList;
+
+	static public Collider2D _playerCollider;
+
+	//-----validation that it is not outside clamping----
+	static public float VectorMinX;
+	static public float VectorMaxX;
+	static public float VectorMinY;
+	static public float VectorMaxY;
 
 	//---clamping vars-----
-	public int xMin = -130;
-	public int xMax = 130;
-	public int yMin = -50;
-	public int yMax = -35;
+	static public int xMin = -130;
+	static public int xMax = 130;
+	static public int yMin = -50;
+	static public int yMax = -35;
+
+	[HideInInspector]
+	public float playerDistance;
+	public float normalMovementSpeed;
+	private float movingSpeed;
+
+	public Vector2 destinationVector;
 
 	//---range vars
 	public int xRange = 1;
@@ -29,40 +37,30 @@ public class AISmall : MonoBehaviour {
 	private float permentTimer;
 
 	public Transform targetPlayer;
-	public Transform targetObject;
-	public Transform targetRayCast;
+
+	public GameObject _player;
+	public GameObject _camera;
 
 	private Vector3 vectorDestination;
 
-	public GameObject _player;
-	private GameObject _enemy;
-	
-	[HideInInspector]
-	public GameObject _destination;
-	
-	[HideInInspector]
-	public Collider2D _collider;
-	public Collider2D _ownCollider;
-	
-	private RaycastHit2D hit;
-	
-	//--------bools for direction-----
-	public bool movingUp = true;
-	public bool movingRight = true;
-	
 	public bool playerTouch = false;
-	public bool enemyTouch = false;
-	
-	bool noDamage = true;
-	public bool enemyNav = false;
-	
+	public bool forceAttack = false;
+	public bool xReached = false;
+	public bool yReached = false;
+
 	// Use this for initialization
 	void Start()
 	{
-		fastMovementSpeed = sprintMovementSpeed;
-		slowMovementSpeed = normalMovementSpeed;
-		
+		_playerCollider = _player.GetComponent<Collider2D>();
+		movingSpeed = normalMovementSpeed;
 		permentTimer = attackTimer;
+
+		VectorBoolList = new bool [4]; //init the bool list
+		
+		for(int index = 0; index < VectorBoolList.Length; index ++)
+		{
+			VectorBoolList[index] = true;
+		}
 
 	}
 	
@@ -70,309 +68,177 @@ public class AISmall : MonoBehaviour {
 	void FixedUpdate()
 	{
 		//---------------clamping--------------
-		transform.position = new Vector3(Mathf.Clamp(transform.position.x, xMin, xMax), Mathf.Clamp(transform.position.y, yMin, yMax), 0);
+		transform.position = new Vector3 (Mathf.Clamp (transform.position.x, xMin, xMax), Mathf.Clamp (transform.position.y, yMin, yMax), 0);
 
-		if (attackTimer > 0)
+		//---------------Resetting Attack Timer---------
+		if (attackTimer > 0) 
 		{
-			//print (attackTimer + " : AttackTimer");
 			attackTimer -= 1 * Time.deltaTime;
 		}
-		
-		targetDistance = Vector3.Distance(targetPlayer.position, transform.position);
-		
-		//-------Speed Changes Based Upon Distance------------
-		if (targetDistance > sprintDistance)
+
+		//------calc player Distance-------------
+		playerDistance = Vector3.Distance (targetPlayer.position, transform.position);
+
+		//--------figure out what phase based up playerdistance--------
+		if (playerDistance < 10)
 		{
-			normalMovementSpeed = fastMovementSpeed;
-		}
-		else
-			normalMovementSpeed = slowMovementSpeed;
-		
-		//--------If Hit, always Chances------------
-		if (noDamage)
-		{
-			if (this.gameObject.GetComponent<EnemiesReceiveDamage>().hp < this.gameObject.GetComponent<EnemiesReceiveDamage>().maxHp)
-			{
-				attackDistance = 1000;
-				noDamage = false;
-				//print ("I've Been Hit!");
-			}
-		}
-		
-		//------Moves Towards the Player-------------
-		if (targetDistance < attackDistance)
-		{
-			if (playerTouch == false && enemyTouch == false)
-			{
-				MovingPhase(targetPlayer, normalMovementSpeed);
-			}
-		}
-		//-------Enemy Moves Around Obstacle-----------
-		if (playerTouch) 
-		{ // prevents enemy from pushing the enemy touching the player
-			enemyNav = false;
-			enemyTouch = false;
+			AttackPhase();
 		} 
+		else if (playerDistance < 20)
+		{
+			IdlePhase();
+		} 
+		else if (playerDistance < 50) 
+		{
+			MovePhase(_player.transform.position);
+		}
+		else 
+		{
+			//do nothing
+		}
+			
+		
+	}
+
+	void AttackPhase()
+	{
+		oneAttackPlayer = true;
+		
+		print ("Attack Phase");
+		if (playerTouch) 
+		{
+			if (attackTimer < 1)
+			{
+				if (_player.GetComponent<PlayerReceivesDamage> () != null) 
+				{
+					_player.GetComponent<PlayerReceivesDamage> ().meleeHits++;
+					attackTimer = permentTimer;
+				}
+			}
+		} 
+		else
+			MovePhase(_player.transform.position);
+	}
+
+	void IdlePhase()
+	{
+		print ("Idle");
+
+		if (oneAttackPlayer) 
+		{
+			CalcVectors ();
+
+			for (int index = 0; index < VectorList.Length; index ++) 
+			{
+				if (VectorBoolList [index]) 
+				{
+					//print (VectorBoolList [index]);
+					destinationVector = VectorList [index];
+					VectorBoolList [index] = false;
+
+					index = VectorList.Length;
+				}
+			}
+
+			if (!xReached && !yReached)
+			{
+				MovePhase (destinationVector);
+			}
+			else
+			{
+				//do nothing
+			}
+		} 
+		else 
+		{
+			_camera.GetComponent<CheckForEnemies>().CheckWhoClosest();
+
+			if (forceAttack)
+			{
+				AttackPhase();
+			}
+		}
+	}
+//---------------CalcVectors---------------
+	static void CalcVectors()
+	{
+		VectorList = new Vector2[4];
+
+		VectorMinX =  _playerCollider.bounds.min.x;
+		VectorMinY =  _playerCollider.bounds.min.y;
+		VectorMaxX =  _playerCollider.bounds.max.x;
+		VectorMaxY =  _playerCollider.bounds.max.y;
+
+		//----------validation that it is within clamping-----
+		if (VectorMinX < xMin)
+			VectorMinX = xMin;
+
+		if (VectorMinY < yMin)
+			VectorMinY = yMin;
+
+		if (VectorMaxX > xMax)
+			VectorMaxX = xMax;
+
+		if (VectorMaxY > yMax)
+			VectorMaxY = yMax;
+		   	
+		VectorList[0] = new Vector2((VectorMinX - 5), //how far left of the player
+		                            VectorMaxY);
+
+		VectorList[1] = new Vector2((VectorMaxX + 5), //how far right of the player
+		                            VectorMaxY); 
+
+		VectorList[2] = new Vector2((VectorMinX - 5), //how far left of the player
+		                            VectorMinY); 
+
+		VectorList[3] = new Vector2((VectorMaxX + 5), //how far right of the player
+		                            VectorMinY); 
 
 	}
-	
-	void MovingPhase(Transform target, float movingSpeed)
+//====================MOVING PHASE=====================
+	void MovePhase(Vector2 destination)
 	{
-		if ((target.position.y - yRange)> transform.position.y)
+		print ("Move Phase");
+		//moving up and down towards destination
+		if (destination.y > transform.position.y)
 		{
 			transform.position += transform.up * movingSpeed * Time.deltaTime;
-			movingUp = true;
 		}
-		else if ((target.position.y  + yRange) < transform.position.y)
+		else if (destination.y < transform.position.y)
 		{
 			transform.position += transform.up * -movingSpeed * Time.deltaTime;
-			movingUp = false;
 		}
 		else
 		{
 			transform.position += transform.up * 0;
+			xReached = true;
 		}
-		
-		if ((target.position.x -xRange )> transform.position.x)
+
+		//moving left and right towards destination
+		if (destination.x > transform.position.x)
 		{
 			transform.position += transform.right * movingSpeed * Time.deltaTime;
-			movingRight = true;
 		}
-		else if ((target.position.x + xRange) < transform.position.x)
+		else if (destination.x < transform.position.x)
 		{
 			transform.position += transform.right * -movingSpeed * Time.deltaTime;
-			movingRight = false;
 		}
 		else
 		{
 			transform.position += transform.right * 0;
+			yReached = true;
 		}
 	}
-	
-	void OnCollisionEnter2D(Collision2D playerC)
-	{
-		if (playerC.gameObject.tag == "Player")
-		{
-			playerTouch = true;
-			enemyNav = false;
-		}
-		else if (playerC.gameObject.tag == "Enemy")
-		{
-			enemyTouch = true;
-			_enemy = playerC.gameObject;
-			
-			if (_enemy.GetComponent<AISmall>().movingUp)
-			{
-				enemyNav = true;
-				// print("he's going up!");
-				
-				hit = RayLeft(targetRayCast); //check left
-				
-				if (hit.collider == null)
-				{
-					//print("move to the left!");
-					targetObject.position = vectorDestination;
-				}
-				else
-				{
-					hit = RayRight(targetRayCast); //check right
-					
-					if (hit.collider == null)
-					{
-						//print("move to the right!");
-						targetObject.position = vectorDestination;
-					}
-					else
-					{
-						hit = RayUp(targetRayCast); //check up
-						if (hit.collider == null)
-						{
-							// print("move to the up!");
-							targetObject.position = vectorDestination;
-						}
-						else
-						{
-							hit = RayDown(targetRayCast); //check down
-							if (hit.collider == null)
-							{
-								//print("move to the down!");
-								targetObject.position = vectorDestination;
-							}
-							else
-							{
-								//print("HELP I'M TRAPPED!");
-								enemyNav = false;
-							}
-						}
-					}
-				}
-				
-			}
-			
-			else if (_enemy.GetComponent<AISmall>().movingRight)
-			{
-				enemyNav = true;
-				//print("he's going right!");
-				
-				hit = RayUp(targetRayCast); //check up
-				if (hit.collider == null)
-				{
-					//print("move to the up!");
-					targetObject.position = vectorDestination;
-				}
-				else
-				{
-					hit = RayDown(targetRayCast); //check down
-					
-					if (hit.collider == null)
-					{
-						//print("move to the down!");
-						targetObject.position = vectorDestination;
-					}
-					else
-					{
-						
-						hit = RayLeft(targetRayCast); //check left
-						
-						if (hit.collider == null)
-						{
-							//print("move to the left!");
-							targetObject.position = vectorDestination;
-						}
-						else
-						{
-							hit = RayRight(targetRayCast); // check right
-							
-							if (hit.collider == null)
-							{
-								//print("move to the right!");
-								targetObject.position = vectorDestination;
-							}
-							else
-							{
-								// print("HELP I'M TRAPPED~");
-								enemyNav = false;
-							}
-						}
-					}
-				}
-			}
-			else //playerTouch = true
-			{
-				// print("This guy's attacking....");
-				
-				_collider = playerC.collider;
-				
-				if (_collider.bounds.max.x <= _ownCollider.bounds.min.x || _collider.bounds.min.x > _ownCollider.bounds.max.x) //on the left or right side
-				{
-					//numHits++;
-					vectorDestination = new Vector3(_ownCollider.bounds.center.x, (_ownCollider.bounds.center.y + 6), 0);
-					playerC.gameObject.GetComponent<AISmall>().targetObject.position = vectorDestination;
-					// print("We're going around!");
-					enemyNav = true;
-				}
-				else
-				{
-					//numHits++;
-					vectorDestination = new Vector3((_ownCollider.bounds.center.x + 6), _ownCollider.bounds.center.y, 0);
-					targetObject.position = vectorDestination;
-					//print("We're going up!");
-					enemyNav = true;
-				}
-			}
-			}
-		}
-		RaycastHit2D RayLeft(Transform targetRayCast)
-		{
-			targetRayCast.transform.localPosition = new Vector3(-1, 0, 0);
-			hit = Physics2D.Raycast(targetRayCast.transform.position, -Vector2.right, 2); //check if left is open
-			//hit = Physics2D.BoxCast (targetRayCast.transform.position, new Vector2 (_ownCollider.bounds.min.x - 3, _ownCollider.bounds.min.y), 0, -Vector2.right);
-			Debug.DrawRay(targetRayCast.transform.position, -Vector2.right, Color.green, 2);
-			
-			vectorDestination = new Vector3((_ownCollider.bounds.min.x - 3), _ownCollider.bounds.center.y, 0);
-			//numHits++;
-			return hit;
-		}
-		
-		RaycastHit2D RayRight(Transform targetRayCast)
-		{
-			targetRayCast.transform.localPosition = new Vector3(1, 0, 0);
-			hit = Physics2D.Raycast(targetRayCast.transform.position, Vector2.right, 2); //check if right is open
-			Debug.DrawRay(targetRayCast.transform.position, Vector2.right, Color.red, 2);
-			
-			vectorDestination = new Vector3((_ownCollider.bounds.min.x + 3), _ownCollider.bounds.center.y, 0);
-			
-			//numHits++;
-			return hit;
-		}
-		
-		RaycastHit2D RayUp(Transform targetRayCast)
-		{
-			targetRayCast.transform.localPosition = new Vector3(0, 2, 0);
-			hit = Physics2D.Raycast(targetRayCast.transform.position, Vector2.up, 2); //check if up is open
-			Debug.DrawRay(targetRayCast.transform.position, Vector2.up, Color.black, 2);
-			
-			vectorDestination = new Vector3(_ownCollider.bounds.min.x, (_ownCollider.bounds.center.y + 4), 0);
-			//numHits++;
-			return hit;
-		}
-		
-		RaycastHit2D RayDown(Transform targetRayCast)
-		{
-			targetRayCast.transform.localPosition = new Vector3(0, -2, 0);
-			hit = Physics2D.Raycast(targetRayCast.transform.position, -Vector2.up, 2); //check if down is open
-			Debug.DrawRay(targetRayCast.transform.position, -Vector2.up, Color.yellow, 2);
-			
-			vectorDestination = new Vector3(_ownCollider.bounds.min.x, (_ownCollider.bounds.center.y - 4), 0);
-			//numHits++;
-			return hit;
-		}
 
 	void OnCollisionStay2D(Collision2D playerC)
 	{
 		if (playerC.gameObject.tag == "Player")
-		{
-			enemyTouch = false;
-			_player = playerC.gameObject;
-			this.gameObject.GetComponent<EnemiesReceiveDamage>().rb.mass = 5000;
-			movingUp = false;
-			movingRight = false;
-			if (attackTimer < 1)
-			{
-				if (playerC.gameObject.GetComponent<PlayerReceivesDamage>() != null)
-				{
-					playerC.gameObject.GetComponent<PlayerReceivesDamage>().meleeHits++;
-					attackTimer = permentTimer;
-				}
-			}
-		}
-	
-		else if (playerC.gameObject.tag == "Enemy")
-		{
-
-		}
+			playerTouch = true;
 	}
-	
+
 	void OnCollisionExit2D(Collision2D playerC)
 	{
 		if (playerC.gameObject.tag == "Player")
-		{
 			playerTouch = false;
-		}
-		else if (playerC.gameObject.tag == "Enemy")
-		{
-			enemyTouch = false;
-		}
-	}
-
-
-	void OnTriggerEnter2D(Collider2D _point)
-	{
-		if (_point.tag == "Point")
-		{
-			//print("you got there!");
-			enemyNav = false;
-			enemyTouch = false;
-		}
 	}
 }
