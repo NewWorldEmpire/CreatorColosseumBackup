@@ -5,7 +5,7 @@ public class ArrowScript : MonoBehaviour {
     bool aqcuireDMG;
     [HideInInspector]
     public float myDMG;
-    private float myWait = 5;
+    public float myWait = 5;
 
     void Start()
     {
@@ -35,7 +35,7 @@ public class ArrowScript : MonoBehaviour {
                 myDMG = charge.gameObject.GetComponent<CombatScript>().playerDamage;
                 //print("dmg " + myDMG);
                 //acquiring the "chargeShot" variable and setting the courotine to that value.
-                myWait = (charge.gameObject.GetComponent<CombatScript>().chargeShot * 1.0f) + 0.3f;
+                myWait = (charge.gameObject.GetComponent<CombatScript>().chargeShot * 1.0f) + 0.5f;
                 charge.gameObject.GetComponent<CombatScript>().chargeShot = 0;
                 //print("charge " + myWait);
                 StartCoroutine(WaitAndPrint(myWait));

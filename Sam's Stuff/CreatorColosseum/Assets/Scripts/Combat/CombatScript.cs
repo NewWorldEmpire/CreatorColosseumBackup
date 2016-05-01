@@ -30,7 +30,7 @@ public class CombatScript : MonoBehaviour
     public float criticalChance;
     [Range(2, 5)]
     public int criticalDamage;
-    private float chargeMultiplier = 100.0f;
+    private float chargeMultiplier = 10.0f;
     [HideInInspector]
     public float chargeDistance;
     public bool melee = true;
@@ -507,7 +507,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 left.SetActive(false);
@@ -526,7 +526,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveUp = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 right.SetActive(false);
