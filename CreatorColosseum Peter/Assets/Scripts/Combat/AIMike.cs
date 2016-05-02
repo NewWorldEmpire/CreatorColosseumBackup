@@ -15,6 +15,7 @@ public class AIMike : MonoBehaviour {
 		
 	public bool		xReached;
 	public bool		yReached = true;
+	public bool		isDead = false;
 
 	// Use this for initialization
 	void Start () 
@@ -34,6 +35,11 @@ public class AIMike : MonoBehaviour {
 		{
 			ShootPhase();
 			destination = CreateDestination ();
+		}
+
+		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
+		{
+			isDead = true;
 		}
 	
 	}

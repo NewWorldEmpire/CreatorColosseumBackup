@@ -138,10 +138,11 @@ public class AISmall : MonoBehaviour {
 					VectorBoolList [index] = false;
 
 					index = VectorList.Length;
+					print ("Assign Vectors");
 				}
 			}
 
-			if (!xReached && !yReached)
+			if (!xReached || !yReached)
 			{
 				MovePhase (destinationVector);
 			}
