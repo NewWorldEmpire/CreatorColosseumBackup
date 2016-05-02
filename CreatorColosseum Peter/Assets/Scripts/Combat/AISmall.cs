@@ -49,6 +49,7 @@ public class AISmall : MonoBehaviour {
 
 	public bool playerTouch = false;
 	public bool forceAttack = false;
+	public bool knowDestination = false;
 	public bool xReached = false;
 	public bool yReached = false;
 
@@ -106,6 +107,7 @@ public class AISmall : MonoBehaviour {
 	void AttackPhase()
 	{
 		oneAttackPlayer = true;
+		knowDestination = false;
 
 		if (playerTouch) 
 		{
@@ -124,21 +126,26 @@ public class AISmall : MonoBehaviour {
 
 	void IdlePhase()
 	{
-
 		if (oneAttackPlayer) 
 		{
 			CalcVectors ();
 
-			for (int index = 0; index < VectorList.Length; index ++) 
+			if (!knowDestination)
 			{
-				if (VectorBoolList [index]) 
+				for (int index = 0; index < VectorList.Length; index ++) 
 				{
-					//print (VectorBoolList [index]);
-					destinationVector = VectorList [index];
-					VectorBoolList [index] = false;
+					if (VectorBoolList [index]) 
+					{
+						//print (VectorBoolList [index]);
+						destinationVector = VectorList [index];
+						VectorBoolList [index] = false;
 
-					index = VectorList.Length;
-					print ("Assign Vectors");
+						knowDestination = true;
+
+						print ("Assign Vectors");
+						break;
+					}
+
 				}
 			}
 

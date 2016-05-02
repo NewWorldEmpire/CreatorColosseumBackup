@@ -109,6 +109,16 @@ public class CheckForEnemies : MonoBehaviour {
 			}
 		}
 
-		enemies [indexClose].GetComponent<AISmall> ().forceAttack = true;
+		for (int index = 0; index < enemies.Length; index ++) 
+		{
+			if (indexClose == index)
+			{
+				enemies [index].GetComponent<AISmall> ().forceAttack = true;
+			}
+			else
+			{
+				enemies [index].GetComponent<AISmall> ().forceAttack = false;
+			}
+		}
 	}
 }
