@@ -138,7 +138,7 @@ public class PlayerReceivesDamage : MonoBehaviour
             }
         }
     }
-    GameObject InitiateCBT(string text)
+    public GameObject InitiateCBT(string text)
     {
         GameObject temp = Instantiate(CBTPrefab) as GameObject;
         RectTransform tempRect = temp.GetComponent<RectTransform>();

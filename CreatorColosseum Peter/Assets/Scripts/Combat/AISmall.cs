@@ -24,14 +24,18 @@ public class AISmall : MonoBehaviour {
 
 	[HideInInspector]
 	public float playerDistance;
-	public float normalMovementSpeed;
-	private float movingSpeed;
+	public float movingSpeed;
 
 	public Vector2 destinationVector;
 
-	//---range vars
+	//---range vars-----
 	public int xRange = 1;
 	public int yRange = 1;
+
+	//---phase var----
+	public int attackRange  = 10;
+	public int idleRange    = 20;
+	public int moveRange	= 50;
 
 	public float attackTimer;
 	private float permentTimer;
@@ -52,7 +56,6 @@ public class AISmall : MonoBehaviour {
 	void Start()
 	{
 		_playerCollider = _player.GetComponent<Collider2D>();
-		movingSpeed = normalMovementSpeed;
 		permentTimer = attackTimer;
 
 		VectorBoolList = new bool [4]; //init the bool list
@@ -80,15 +83,15 @@ public class AISmall : MonoBehaviour {
 		playerDistance = Vector3.Distance (targetPlayer.position, transform.position);
 
 		//--------figure out what phase based up playerdistance--------
-		if (playerDistance < 10 || forceAttack)
+		if (playerDistance < attackRange || forceAttack)
 		{
 			AttackPhase();
 		} 
-		else if (playerDistance < 20)
+		else if (playerDistance < idleRange)
 		{
 			IdlePhase();
 		} 
-		else if (playerDistance < 50) 
+		else if (playerDistance < moveRange) 
 		{
 			MovePhase(_player.transform.position);
 		}
@@ -197,33 +200,37 @@ public class AISmall : MonoBehaviour {
 	void MovePhase(Vector2 destination)
 	{
 		//moving up and down towards destination
-		if (destination.y > transform.position.y)
+		if ((destination.y - yRange) > transform.position.y)
 		{
 			transform.position += transform.up * movingSpeed * Time.deltaTime;
+			yReached = false;
 		}
-		else if (destination.y < transform.position.y)
+		else if ((destination.y + yRange) < transform.position.y)
 		{
 			transform.position += transform.up * -movingSpeed * Time.deltaTime;
+			yReached = false;
 		}
 		else
 		{
 			transform.position += transform.up * 0;
-			xReached = true;
+			yReached = true;
 		}
 
 		//moving left and right towards destination
-		if (destination.x > transform.position.x)
+		if ((destination.x - xRange) > transform.position.x)
 		{
 			transform.position += transform.right * movingSpeed * Time.deltaTime;
+			xReached = false;
 		}
-		else if (destination.x < transform.position.x)
+		else if ((destination.x + xRange) < transform.position.x)
 		{
 			transform.position += transform.right * -movingSpeed * Time.deltaTime;
+			xReached = false;
 		}
 		else
 		{
 			transform.position += transform.right * 0;
-			yReached = true;
+			xReached = true;
 		}
 	}
 
