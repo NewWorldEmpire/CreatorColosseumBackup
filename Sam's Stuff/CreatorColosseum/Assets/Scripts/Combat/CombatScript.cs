@@ -658,7 +658,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25,30);
                 down.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
@@ -674,7 +674,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 left.SetActive(false);
@@ -690,7 +690,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveUp = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 right.SetActive(false);
@@ -706,7 +706,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);

@@ -42,6 +42,8 @@ public class EnemiesReceiveDamage : MonoBehaviour {
     [HideInInspector]
     public AudioSource au_swordhit;
 
+    bool frozen;
+
 
 
     void Awake()
@@ -110,6 +112,12 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                 burningChild.SetActive(false);
         }
 
+        if (frozen)
+        {
+            Invoke("ThawEnemy", Random.Range(3f, 6f));
+            frozen = false;
+        }
+
         //if health is zero below, object dies
         if (gameObject.tag == "Boss")
         {
@@ -157,15 +165,19 @@ public class EnemiesReceiveDamage : MonoBehaviour {
             SetHealth(calculator);
         }
 
-        //fire damage
-        if (col.gameObject.tag == "Flame")
+        //ice damage
+        if (col.gameObject.tag == "Ice")
         {
             hPTimer = 3;
             hPBar.SetActive(true);
             hp -= _player.GetComponent<CombatScript>().fireDamage * Time.deltaTime;
             calculator = hp / maxHp;
             SetHealth(calculator);
-            burning = 3;
+            if (!frozen)
+            {
+                FreezeEnemy();
+            }
+            //burning = 3;
 
         }
         //pysical damage
@@ -268,7 +280,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         hPTimer = 3;
         hPBar.SetActive(true);
         //dealing damage to object
-        if (ar.gameObject.tag == "Arrow")
+        if (ar.gameObject.tag == "Fireball")
         {
             //using calculations to determine the chance of landing a hit.
             //this also makes sure that chance of hitting cannot be greater or less than a set amount.
@@ -357,5 +369,17 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         //"myHealth" needs to be set between the values of 0 and 1: 1 being 100%.
         healthBar.transform.localScale = new Vector3(myHealth, healthBar.transform.localScale.y, healthBar.transform.localScale.z);
         healthBar.color = Color.Lerp(endColor, startColor, calculator);
+    }
+
+    void FreezeEnemy()
+    {
+        gameObject.GetComponent<AISmall>().movingSpeed = 2;
+        frozen = true;
+                        
+    }
+
+    void ThawEnemy()
+    {
+        gameObject.GetComponent<AISmall>().movingSpeed = 8;
     }
 }
