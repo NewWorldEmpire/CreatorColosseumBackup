@@ -159,9 +159,9 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         if (col.gameObject.tag == "Mouse" && col.gameObject.GetComponent<MouseScript>().hit == true)
         {
             col.gameObject.GetComponent<MouseScript>().hit = false;
-            damageTaken -= _player.GetComponent<CombatScript>().lightDamage;
+            damageTaken = _player.GetComponent<CombatScript>().lightDamage;
             InitCBT(damageTaken.ToString()).GetComponent<Animator>().SetTrigger("Hit");
-            hp += damageTaken;
+            hp -= damageTaken;
             calculator = hp / maxHp;
             SetHealth(calculator);
         }
