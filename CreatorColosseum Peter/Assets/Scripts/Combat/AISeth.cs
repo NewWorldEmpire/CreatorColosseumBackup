@@ -51,6 +51,11 @@ public class AISeth : MonoBehaviour {
 		{
 			AttackPhase ();
 		}
+
+		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
+		{
+			Camera.main.GetComponent<Transitions>().levelSelect ++;
+		}
 	}
 
 //------------attackphase()----------

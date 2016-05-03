@@ -12,9 +12,11 @@ public class CheckForEnemies : MonoBehaviour {
     public float bossWait;
 
 	//--------AI Vars------
-	//[HideInInspector]
+	[HideInInspector]
 	public int	lowDistance;
+	[HideInInspector]
 	public int	indexClose;
+	[HideInInspector]
 	public int 	tempDistance;
 
 	//--------------------
@@ -25,8 +27,9 @@ public class CheckForEnemies : MonoBehaviour {
     bool bossMusicPlaying;
 
     // Use this for initialization
-    void Start () {
-	
+    void Start () 
+	{
+		boss.SetActive (false);
 	}
 	
 	// Update is called once per frame

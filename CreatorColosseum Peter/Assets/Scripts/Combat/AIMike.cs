@@ -5,9 +5,7 @@ public class AIMike : MonoBehaviour {
 
 	public float 	movingSpeed;
 	public float	fireFreq;
-
 	private float	xPos;
-
 	private float lastShot;
 
 	private int		randomY;
@@ -46,7 +44,7 @@ public class AIMike : MonoBehaviour {
 
 		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
 		{
-			isDead = true;
+			Camera.main.GetComponent<Transitions>().levelSelect ++;
 		}
 	
 	}
