@@ -3,7 +3,10 @@ using System.Collections;
 
 public class AISeth : MonoBehaviour {
 
-	public int movingSpeed;
+	public int resetSpeed;
+	public int chargeSpeed;
+
+	public int chargeDamage;
 
 	public float waitTime;
 	private float wait;
@@ -22,13 +25,16 @@ public class AISeth : MonoBehaviour {
 	public bool xReached;
 	public bool yReached;
 	public bool isDead;
+	public bool grabPlayerY;
 
 	public bool isReset = true;
 	public bool isAttack;
 
 	// Use this for initialization
-	void Start () {
-	
+	void Start () 
+	{
+		isReset = true;
+		resetPoint =  xMax - 20;
 	}
 	
 	// Update is called once per frame
@@ -39,6 +45,7 @@ public class AISeth : MonoBehaviour {
 		{
 			ResetPhase ();
 		}
+
 		if (isAttack) 
 		{
 			AttackPhase ();
@@ -48,46 +55,62 @@ public class AISeth : MonoBehaviour {
 //------------attackphase()----------
 	void AttackPhase()
 	{
-		if (transform.position.x > _player.transform.position.x) 
+		if (!grabPlayerY) 
 		{
-			destination = new Vector2 (xMin - 20, transform.position.y);
-			MovePhase (destination);
-			resetPoint = xMin + 20;
+			if (transform.position.x > _player.transform.position.x) 
+			{
+				print ("GO LEFT: " + grabPlayerY);
+				destination = new Vector2 (xMin - 20, transform.position.y);
+				resetPoint = xMin + 20;
+			}
+			else 
+			{
+				print ("GO RIGHT: " + grabPlayerY);
+				destination = new Vector2 (xMax + 20, transform.position.y);
+				resetPoint = xMax - 20;
+			}
+
+			grabPlayerY = true;
 		}
-		else 
-		{
-			destination = new Vector2 (xMax + 20, transform.position.y);
-			MovePhase (destination);
-			resetPoint = xMax - 20;
-		}
+
+		MovePhase (destination, chargeSpeed);
 
 		if (yReached && xReached) 
 		{
+			print ("Hello!");
 			isAttack = false;
 			isReset = true;
+			grabPlayerY = false;
 		}
 	}
 
 //---------------ResetPhase()--------------
 	void ResetPhase()
 	{
-		wait = Time.time + waitTime;
-		destination = new Vector2 (resetPoint, _player.transform.position.y);
-		MovePhase (destination);
-
-		if (Time.time > wait) 
+		if (!grabPlayerY) 
 		{
+			destination = new Vector2 (resetPoint, _player.transform.position.y);
+			grabPlayerY = true;
+		}
+
+		wait = Time.time + waitTime;
+		MovePhase (destination, resetSpeed);
+
+		//if (Time.time > wait) 
+		//{
 			if (yReached && xReached) 
 			{
+				print ("Hello!");
 				isAttack = true;
 				isReset = false;
+				grabPlayerY = false;
 			}
-		}
+		//}
 	}
 
 
 //====================MOVING PHASE=====================
-	void MovePhase(Vector2 destination)
+	void MovePhase(Vector2 destination, int movingSpeed)
 	{
 		//moving up and down towards destination
 		if ((destination.y - yRange) > transform.position.y)
@@ -122,5 +145,10 @@ public class AISeth : MonoBehaviour {
 			transform.position += transform.right * 0;
 			xReached = true;
 		}
+	}
+	void OnCollisionStay2D(Collision2D playerC)
+	{
+		_player.GetComponent<PlayerReceivesDamage>().InitiateCBT(chargeDamage.ToString()).GetComponent<Animator>().SetTrigger("Hit"); //changed playerReceivesDamge
+		_player.GetComponent<CombatScript>().health -= chargeDamage;
 	}
 }
