@@ -7,8 +7,8 @@ public class Bullet : MonoBehaviour {
 
 	public int movingSpeed;
 	public int bulletDamage;
-
 	public int xMin;
+	private int armor;
 
 	public Vector2 destination;
 
@@ -42,8 +42,9 @@ public class Bullet : MonoBehaviour {
 	{
 		if (playerC.gameObject.tag == "Player") 
 		{
+			armor = _player.GetComponent<CombatScript>().armor;
 			_player.GetComponent<PlayerReceivesDamage>().InitiateCBT(bulletDamage.ToString()).GetComponent<Animator>().SetTrigger("Hit"); //changed playerReceivesDamge
-			_player.GetComponent<CombatScript>().health -= bulletDamage;
+			_player.GetComponent<CombatScript>().health -= (bulletDamage - armor);
 			this.gameObject.SetActive(false);
 		}
 	}

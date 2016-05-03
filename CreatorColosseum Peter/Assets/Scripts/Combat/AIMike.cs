@@ -4,7 +4,11 @@ using System.Collections;
 public class AIMike : MonoBehaviour {
 
 	public float 	movingSpeed;
+	public float	fireFreq;
+
 	private float	xPos;
+
+	private float lastShot;
 
 	private int		randomY;
 	public int		yMin;
@@ -33,8 +37,11 @@ public class AIMike : MonoBehaviour {
 		}
 		else 
 		{
-			ShootPhase();
-			destination = CreateDestination ();
+			if (Time.time > lastShot + fireFreq)
+			{
+				ShootPhase();
+				destination = CreateDestination ();
+			}
 		}
 
 		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
@@ -98,15 +105,18 @@ public class AIMike : MonoBehaviour {
 //------------------ShootPhase()---------
 	void ShootPhase()
 	{
-		GameObject obj = EnemyFluttershyPooling.current.GetPooledObject();
+		lastShot = Time.time;
+
+		GameObject obj = EnemyFluttershyPooling.current.GetPooledObject ();
 		
-		if (obj == null)
+		if (obj == null) 
 		{
 			return;
 		}
 		
 		obj.transform.position = new Vector2 ((transform.position.x - xBulletOffset), transform.position.y);
 		obj.transform.rotation = transform.rotation;
-		obj.SetActive(true);
+		obj.SetActive (true);
+
 	}
 }

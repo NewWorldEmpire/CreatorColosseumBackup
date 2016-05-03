@@ -13,6 +13,7 @@ public class AISeth : MonoBehaviour {
 
 	public int xMin;
 	public int xMax;
+	private int armor;
 
 	public int yRange = 2;
 	public int xRange = 2;
@@ -91,13 +92,16 @@ public class AISeth : MonoBehaviour {
 		{
 			destination = new Vector2 (resetPoint, _player.transform.position.y);
 			grabPlayerY = true;
+			wait = Time.time;
 		}
-
-		wait = Time.time + waitTime;
+		
 		MovePhase (destination, resetSpeed);
 
-		//if (Time.time > wait) 
-		//{
+		print (wait + ": wait");
+		print (Time.time + ": time");
+
+		if ((Time.time - wait) > (waitTime + 3.5)) //3.5 to compinsiate for getting to point
+		{
 			if (yReached && xReached) 
 			{
 				print ("Hello!");
@@ -105,7 +109,7 @@ public class AISeth : MonoBehaviour {
 				isReset = false;
 				grabPlayerY = false;
 			}
-		//}
+		}
 	}
 
 
@@ -148,7 +152,11 @@ public class AISeth : MonoBehaviour {
 	}
 	void OnCollisionStay2D(Collision2D playerC)
 	{
-		_player.GetComponent<PlayerReceivesDamage>().InitiateCBT(chargeDamage.ToString()).GetComponent<Animator>().SetTrigger("Hit"); //changed playerReceivesDamge
-		_player.GetComponent<CombatScript>().health -= chargeDamage;
+		if (isAttack) 
+		{ 
+			armor = _player.GetComponent<CombatScript> ().armor;
+			_player.GetComponent<PlayerReceivesDamage> ().InitiateCBT (chargeDamage.ToString ()).GetComponent<Animator> ().SetTrigger ("Hit"); //changed playerReceivesDamge
+			_player.GetComponent<CombatScript> ().health -= (chargeDamage - armor);
+		}
 	}
 }
