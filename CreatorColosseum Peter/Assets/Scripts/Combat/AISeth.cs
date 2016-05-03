@@ -13,6 +13,7 @@ public class AISeth : MonoBehaviour {
 
 	public int xMin;
 	public int xMax;
+	private int armor;
 
 	public int yRange = 2;
 	public int xRange = 2;
@@ -152,9 +153,10 @@ public class AISeth : MonoBehaviour {
 	void OnCollisionStay2D(Collision2D playerC)
 	{
 		if (isAttack) 
-		{
+		{ 
+			armor = _player.GetComponent<CombatScript> ().armor;
 			_player.GetComponent<PlayerReceivesDamage> ().InitiateCBT (chargeDamage.ToString ()).GetComponent<Animator> ().SetTrigger ("Hit"); //changed playerReceivesDamge
-			_player.GetComponent<CombatScript> ().health -= chargeDamage;
+			_player.GetComponent<CombatScript> ().health -= (chargeDamage - armor);
 		}
 	}
 }
