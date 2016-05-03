@@ -7,8 +7,6 @@ public class PauseGame : MonoBehaviour {
     public GameObject pauseMenu;
     public GameObject spells;
     public GameObject playerStatusHUD;
-    public GameObject characterStats;
-    public GameObject toolTip;
     bool paused = false;
 
     void Start()
@@ -27,8 +25,6 @@ public class PauseGame : MonoBehaviour {
                 pauseMenu.SetActive(true);
                 spells.SetActive(false);
                 playerStatusHUD.SetActive(false);
-                characterStats.SetActive(false);
-                toolTip.SetActive(false);
             }
             else
             {
@@ -36,8 +32,6 @@ public class PauseGame : MonoBehaviour {
                 pauseMenu.SetActive(false);
                 spells.SetActive(true);
                 playerStatusHUD.SetActive(true);
-                characterStats.SetActive(true);
-                toolTip.SetActive(true);
             }
         }
     }

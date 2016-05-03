@@ -8,6 +8,10 @@ public class PlayerMovement : MonoBehaviour {
     public float speed = 200.0f;
     public float vertSpeed;
     public float sprint = 2;
+    public int xMin = -130;
+    public int xMax = 130;
+    public int yMin = -50;
+    public int yMax = -35;
     [HideInInspector]
     public bool isSprinting = false;
     public float stamina = 5;
@@ -76,6 +80,8 @@ public class PlayerMovement : MonoBehaviour {
         //    anim.SetBool("CastDown", false);
         //}
 
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, xMin, xMax), Mathf.Clamp(transform.position.y, yMin, yMax), 0);
+
         // Only when left mouse button is not clicked, will the WSAD controls work.) 
         if (isSprinting == false)
         {
@@ -83,7 +89,7 @@ public class PlayerMovement : MonoBehaviour {
             moveSpeed = speed;
             //WSAD control
             moveX = Input.GetAxis("Horizontal") * speed * Time.deltaTime;
-            moveY = Input.GetAxis("Vertical") * speed * Time.deltaTime;
+            moveY = Input.GetAxis("Vertical") * vertSpeed * Time.deltaTime;
 
         }
         else
@@ -94,7 +100,7 @@ public class PlayerMovement : MonoBehaviour {
             staminaRecharge = 0;
             //sprinting and stamina drain
             moveX = Input.GetAxis("Horizontal") * speed * sprint * Time.deltaTime;
-            moveY = Input.GetAxis("Vertical") * speed * sprint * Time.deltaTime;
+            moveY = Input.GetAxis("Vertical") * vertSpeed * sprint * Time.deltaTime;
             //if (moveX != 0 || moveY != 0)
             //{
             //    stamina -= 1 * Time.deltaTime;

@@ -16,7 +16,7 @@ public class CombatScript : MonoBehaviour
     [HideInInspector]
     public float playerDamage = 3;
     //[HideInInspector]
-    public float fireDamage = 0.02f;
+    public float iceDamage = 0.02f;
     public float lightDamage = 200.0f;
     public float attackSpeed = 5.0f;
     public int defense;
@@ -30,7 +30,7 @@ public class CombatScript : MonoBehaviour
     public float criticalChance;
     [Range(2, 5)]
     public int criticalDamage;
-    private float chargeMultiplier = 100.0f;
+    public float chargeMultiplier = 10.0f;
     [HideInInspector]
     public float chargeDistance;
     public bool melee = true;
@@ -45,7 +45,7 @@ public class CombatScript : MonoBehaviour
     public Color32 endColor;
     public Image energyBar;
     public GameObject energy;
-    public Transform restorationPrefab;
+    public GameObject restorationPrefab;
     //***calculators**
     float calculator;
     float calculator2;
@@ -60,21 +60,26 @@ public class CombatScript : MonoBehaviour
     public bool casting = false;
 
     //**spellcooldowns
-    float shieldCoolDown;
-    float restoreCoolDown;
-    float fireCoolDown;
-    float lightCoolDown;
+    public float shieldCoolDown;
+    public float restoreCoolDown;
+    public float iceCoolDown;
+    public float lightCoolDown;
     //**Spell Timers**
     float shieldTimer;
-    [HideInInspector]
-    public float restoreTimer;
-    float fireTimer;
+    float restoreTimer;
+    float iceTimer;
+
+	//Keeps track of the cooldown length
+	float shieldCoolDownLength;
+	float iceCoolDownLength;
+	float lightCoolDownLength;
+	float restoreCoolDownLength;
 
 
     //**image cooldowns**
     public Image CoolDownImageShield;
     public Image CoolDownImageRestore;
-    public Image CoolDownImageFire;
+    public Image CoolDownImageice;
     public Image CoolDownImageLight;
 
 
@@ -110,7 +115,16 @@ public class CombatScript : MonoBehaviour
 
     // Use this for initialization
     void Start()
-    {
+	{
+		shieldCoolDownLength = shieldCoolDown;
+		shieldCoolDown = 0;
+		iceCoolDownLength = iceCoolDown;
+		iceCoolDown = 0;
+		lightCoolDownLength = lightCoolDown;
+		lightCoolDown = 0;
+		restoreCoolDownLength = restoreCoolDown;
+		restoreCoolDown = 0;
+
         au_bow1 = gameObject.AddComponent<AudioSource>();
         AudioClip bow1;
 
@@ -252,7 +266,7 @@ public class CombatScript : MonoBehaviour
         if (criticalChance > 0.08f)
             criticalChance = 0.08f;
 
-        if (Input.GetMouseButtonDown(0) && attackRate == 0 && restoreTimer <= 0 && fireTimer <= 0) //left click
+        if (Input.GetMouseButtonDown(0) && attackRate == 0 && restoreTimer <= 0 && iceTimer <= 0) //left click
         {
             if (melee == true)
             {
@@ -313,6 +327,11 @@ public class CombatScript : MonoBehaviour
                     playerDamage = normalDamage * chargeMultiplier;
                     splash = 5;
                     self.GetComponent<PlayerMovement>().moveSpeed = self.GetComponent<PlayerMovement>().moveSpeed * 25;
+                    if(self.GetComponent<PlayerMovement>().stamina >= 50)
+                    {
+                        self.GetComponent<PlayerMovement>().stamina = self.GetComponent<PlayerMovement>().stamina - 50;
+                    }
+                    
                     //self.GetComponent<PlayerMovement>().moveY = self.GetComponent<PlayerMovement>().moveY * 25;
                     smokeChild.SetActive(true);
                 }
@@ -320,7 +339,7 @@ public class CombatScript : MonoBehaviour
         }
 
         //charging the bow
-        if (Input.GetMouseButton(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && fireTimer <= 0)
+        if (Input.GetMouseButton(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && iceTimer <= 0)
         {
             self.GetComponent<PlayerMovement>().moveSpeed = 0;
             //self.GetComponent<PlayerMovement>().moveY = 0;
@@ -448,7 +467,7 @@ public class CombatScript : MonoBehaviour
         }
 
         //using arrows
-        if (Input.GetMouseButtonUp(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && fireTimer <= 0)
+        if (Input.GetMouseButtonUp(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && iceTimer <= 0)
         {
             self.GetComponent<PlayerMovement>().anim.SetBool("UpBow", false);
             self.GetComponent<PlayerMovement>().anim.SetBool("DownBow", false);
@@ -507,7 +526,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 left.SetActive(false);
@@ -526,7 +545,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveUp = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 right.SetActive(false);
@@ -585,25 +604,25 @@ public class CombatScript : MonoBehaviour
 
         //*******MAGIC SPELLS***********
 
-        //casting fire  (Firestorm)
-        if (fireTimer > 0)
-            fireTimer -= 5 * Time.deltaTime;
+        //casting ice  (icestorm)
+        if (iceTimer > 0)
+            iceTimer -= 5 * Time.deltaTime;
 
-        if (fireTimer <= 0 && fireCoolDown > 0)
+        if (iceTimer <= 0 && iceCoolDown > 0)
         {
-            fireCoolDown -= 10 * Time.deltaTime;
-            calculator4 = fireCoolDown / 100;
-            CoolDownFire(calculator4);
+            iceCoolDown -= 1 * Time.deltaTime;		//ice cooldown
+            calculator4 = iceCoolDown / iceCoolDownLength;
+            CoolDownice(calculator4);
         }
-        if (fireCoolDown < 0)
-        {
-            fireCoolDown = 0;
-            calculator4 = fireCoolDown / 100;
-            CoolDownFire(calculator4);
-        }
+//        if (iceCoolDown < 0)
+//        {
+//            //iceCoolDown = iceCoolDownLength;
+//            calculator4 = iceCoolDown / iceCoolDownLength;
+//            CoolDownice(calculator4);
+//        }
 
-        if (fireTimer < 0)
-            fireTimer = 0;
+        if (iceTimer < 0)
+            iceTimer = 0;
 
         if (!Input.GetMouseButton(1) && au_flame1.isPlaying)
         {
@@ -611,13 +630,13 @@ public class CombatScript : MonoBehaviour
             au_flame2.Play();
         }
 
-        if (Input.GetMouseButton(1) && spells == 0 && fireCoolDown < 100 && chargeShot <= 0 && attackRate <= 0)  //right click
+        if (Input.GetMouseButton(1) && spells == 0 && iceCoolDown < iceCoolDownLength && chargeShot <= 0 && attackRate <= 0)  //right click
         {
-            if (fireCoolDown < 100)
-                fireCoolDown += 40 * Time.deltaTime;
-            calculator4 = fireCoolDown / 100;
-            CoolDownFire(calculator4);
-            fireTimer = 1;
+            if (iceCoolDown < iceCoolDownLength)
+                iceCoolDown += 2 * Time.deltaTime;		//how fast the ice spell is used. It is equal to half of the cooldown
+            calculator4 = iceCoolDown / iceCoolDownLength;
+            CoolDownice(calculator4);
+            iceTimer = 1;
 
             //prevent player from moving
             self.GetComponent<PlayerMovement>().moveSpeed = 0;
@@ -658,7 +677,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 down.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
@@ -674,7 +693,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 left.SetActive(false);
@@ -690,7 +709,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveUp = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 right.SetActive(false);
@@ -706,7 +725,7 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
 
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
@@ -717,13 +736,20 @@ public class CombatScript : MonoBehaviour
         if (Input.GetMouseButtonDown(1) && spells == 1 && restoreCoolDown <= 0 && chargeShot <= 0 && attackRate <= 0)   //right click
         {
             au_heal.Play();
-            Rigidbody2D clone;
-            clone = Instantiate(restorationPrefab, transform.position, transform.rotation) as Rigidbody2D;
+            // GameObject clone;
+            //clone = Instantiate(restorationPrefab, transform.position, transform.rotation) as GameObject;
+            //clone.transform.parent = transform;
+            //GameObject childObject = Instantiate(restorationPrefab) as GameObject;
+            //childObject.transform.parent = gameObject.transform;
+
+            GameObject childObject = Instantiate(restorationPrefab, transform.position, transform.rotation) as GameObject;
+            childObject.transform.parent = gameObject.transform;
+
             health += healthRestore;
             if (health > maxHealth)
                 health = maxHealth;
             restoreTimer = 3;
-            restoreCoolDown = 10.0f;
+            restoreCoolDown = restoreCoolDownLength;
 
         }
 
@@ -738,8 +764,9 @@ public class CombatScript : MonoBehaviour
         }
         if (restoreCoolDown > 0)
         {
+			//restore cooldown
             restoreCoolDown -= 1 * Time.deltaTime;
-            calculator3 = restoreCoolDown / 10;
+			calculator3 = restoreCoolDown / restoreCoolDownLength;
             CoolDownRestore(calculator3);
         }
         if (restoreCoolDown < 0)
@@ -753,7 +780,7 @@ public class CombatScript : MonoBehaviour
         if (Input.GetMouseButton(1) && spells == 2 && shieldCoolDown <= 0 && chargeShot <= 0 && attackRate <= 0)  //right click
         {
             shieldChild.SetActive(true);
-            shieldCoolDown = 50;
+            shieldCoolDown = shieldCoolDownLength;
             shieldTimer = 18;
             armor += shield;
 
@@ -775,7 +802,8 @@ public class CombatScript : MonoBehaviour
             shieldTimer -= 1 * Time.deltaTime;
         if (shieldCoolDown > 0)
         {
-            calculator2 = shieldCoolDown / 50;
+			//shield Cooldown
+			calculator2 = shieldCoolDown / shieldCoolDownLength;
             CoolDownShield(calculator2);
             shieldCoolDown -= 1 * Time.deltaTime;
         }
@@ -787,7 +815,7 @@ public class CombatScript : MonoBehaviour
         {
 
             _mouse.Lightning();
-            lightCoolDown = 80;
+            lightCoolDown = lightCoolDownLength;
             au_light.Play();
             restoreTimer = 1;
             casting = true;
@@ -797,7 +825,8 @@ public class CombatScript : MonoBehaviour
         }
         if (lightCoolDown > 0)
         {
-            calculator4 = lightCoolDown / 80;
+			//lightning cooldown
+			calculator4 = lightCoolDown / lightCoolDownLength;
             CoolDownLight(calculator4);
             lightCoolDown -= 1 * Time.deltaTime;
         }
@@ -864,10 +893,10 @@ public class CombatScript : MonoBehaviour
     {
         energyBar.transform.localScale = new Vector3(myEnergy, energyBar.transform.localScale.y, energyBar.transform.localScale.z);
     }
-    //fire cooldown calculations
-    public void CoolDownFire(float Fire)
+    //ice cooldown calculations
+    public void CoolDownice(float ice)
     {
-        CoolDownImageFire.transform.localScale = new Vector3(CoolDownImageFire.transform.localScale.x, calculator4, CoolDownImageFire.transform.localScale.z);
+        CoolDownImageice.transform.localScale = new Vector3(CoolDownImageice.transform.localScale.x, calculator4, CoolDownImageice.transform.localScale.z);
     }
     //cooldown for restoration
     public void CoolDownRestore(float Restorex)

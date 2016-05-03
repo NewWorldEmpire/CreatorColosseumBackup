@@ -210,7 +210,7 @@ public class ToolTip : MonoBehaviour
     {
 
         if (_player.GetComponent<CombatScript>().spells == 0)
-            _ToolTipAttri.text = "Fire Damage: " + _player.GetComponent<CombatScript>().fireDamage;
+            _ToolTipAttri.text = "Fire Damage: " + _player.GetComponent<CombatScript>().iceDamage;
         if (_player.GetComponent<CombatScript>().spells == 1)
             _ToolTipAttri.text = "Restores health: + " + _player.GetComponent<CombatScript>().healthRestore;
         if (_player.GetComponent<CombatScript>().spells == 2)
