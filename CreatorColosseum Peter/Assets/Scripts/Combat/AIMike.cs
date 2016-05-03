@@ -4,7 +4,12 @@ using System.Collections;
 public class AIMike : MonoBehaviour {
 
 	public float 	movingSpeed;
+	public float	fireFreq;
+
+	public float animationLength;
 	private float	xPos;
+
+	private float lastShot;
 
 	private int		randomY;
 	public int		yMin;
@@ -16,6 +21,7 @@ public class AIMike : MonoBehaviour {
 	public bool		xReached;
 	public bool		yReached = true;
 	public bool		isDead = false;
+	public bool		notDone;
 
 	// Use this for initialization
 	void Start () 
@@ -33,8 +39,16 @@ public class AIMike : MonoBehaviour {
 		}
 		else 
 		{
-			ShootPhase();
-			destination = CreateDestination ();
+			if (Time.time > lastShot + fireFreq)
+			{
+				ShootPhase();
+
+				if (!notDone)
+				{
+					destination = CreateDestination ();
+				}
+			}
+
 		}
 
 		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
@@ -98,15 +112,26 @@ public class AIMike : MonoBehaviour {
 //------------------ShootPhase()---------
 	void ShootPhase()
 	{
-		GameObject obj = EnemyFluttershyPooling.current.GetPooledObject();
-		
-		if (obj == null)
-		{
-			return;
-		}
-		
-		obj.transform.position = new Vector2 ((transform.position.x - xBulletOffset), transform.position.y);
-		obj.transform.rotation = transform.rotation;
-		obj.SetActive(true);
+		//animation
+		print ("HELLO!");
+
+		if (Time.time > lastShot + fireFreq + animationLength) {
+
+			lastShot = Time.time;
+
+			GameObject obj = EnemyFluttershyPooling.current.GetPooledObject ();
+			
+			if (obj == null) {
+				return;
+			}
+			
+			obj.transform.position = new Vector2 ((transform.position.x - xBulletOffset), transform.position.y);
+			obj.transform.rotation = transform.rotation;
+			obj.SetActive (true);
+			notDone = false;
+		} 
+		else
+			notDone = true;
+
 	}
 }
