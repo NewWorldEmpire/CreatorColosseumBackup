@@ -12,9 +12,11 @@ public class CameraZoom : MonoBehaviour
 	private float cameraSpeed = 1.5f;
 	[HideInInspector]
 	public float distance = 5.0f;
-	
-	// Use this for initialization
-	void Start () 
+    public float minXClamp;
+    public float maxXClamp;
+
+    // Use this for initialization
+    void Start () 
 	{
 		_player = GameObject.FindGameObjectWithTag("Player");
 	}
@@ -25,26 +27,7 @@ public class CameraZoom : MonoBehaviour
 		//camera follow
 		transform.position = Vector3.Lerp (transform.position, new Vector3 (target.position.x, transform.position.y, transform.position.z), Time.deltaTime * cameraSpeed);
 		distance = Vector3.Distance (this.gameObject.transform.position, _player.transform.position);
-		
-		if (_player.GetComponent<CombatScript> ().melee == true)
-		{
-			if (distance < cameraRange) 
-			{
-				GetComponent<Camera> ().orthographicSize = Mathf.Lerp (GetComponent<Camera> ().orthographicSize, normal, Time.deltaTime * smooth);
-				cameraSpeed = 1.5f;
-			}
-            else
-            {
-                GetComponent<Camera>().orthographicSize = Mathf.Lerp(GetComponent<Camera>().orthographicSize, zoom, Time.deltaTime * smooth);
-                if (distance > cameraRange + 1)
-                    cameraSpeed = 3.0f;
-            }
-		}
-		else
-		{
-            GetComponent<Camera>().orthographicSize = Mathf.Lerp(GetComponent<Camera>().orthographicSize, zoom, Time.deltaTime * smooth);
-            if (distance > cameraRange + 1)
-                cameraSpeed = 3.0f;            
-        }		
-	}
+
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, minXClamp, maxXClamp), transform.position.y, transform.position.z);
+    }
 }

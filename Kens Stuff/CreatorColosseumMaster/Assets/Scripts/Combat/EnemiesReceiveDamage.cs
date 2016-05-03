@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 
 public class EnemiesReceiveDamage : MonoBehaviour {
+
     public float maxHp;
     public float hp;
     private bool hit = false;
@@ -42,6 +43,8 @@ public class EnemiesReceiveDamage : MonoBehaviour {
     [HideInInspector]
     public AudioSource au_swordhit;
 
+    bool frozen;
+
 
 
     void Awake()
@@ -78,10 +81,10 @@ public class EnemiesReceiveDamage : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (hPTimer <= 0)
-        {
-            hPBar.SetActive(false);
-        }
+        //if (hPTimer <= 0)
+        //{
+        //    hPBar.SetActive(false);
+        //}
         if (hPTimer > 0)
         {
             hPTimer -= 1 * Time.deltaTime;
@@ -99,7 +102,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
 
             if (burning <= 2.8f)
             {
-                hp -= _player.GetComponent<CombatScript>().fireDamage * 4 * Time.deltaTime;
+                hp -= _player.GetComponent<CombatScript>().iceDamage * 4 * Time.deltaTime;
                 calculator = hp / maxHp;
                 SetHealth(calculator);
             }
@@ -110,13 +113,32 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                 burningChild.SetActive(false);
         }
 
-        //if health is zero below, object dies
-        if (hp <= 0 && nowDead)
+        if (frozen)
         {
-            dead = true;
-            nowDead = false;
-            gameObject.SetActive(false);
-            //Destroy(gameObject);
+            Invoke("ThawEnemy", Random.Range(3f, 6f));
+            frozen = false;
+        }
+
+        //if health is zero below, object dies
+        if (gameObject.tag == "Boss")
+        {
+            if (hp <= 0)
+            {
+                dead = true;
+                gameObject.SetActive(false);
+                hPBar.SetActive(false);
+            }
+        }
+        else
+        {
+            //if health is zero below, object dies
+            if (hp <= 0 && nowDead)
+            {
+                dead = true;
+                nowDead = false;
+                gameObject.SetActive(false);
+                //Destroy(gameObject);
+            }
         }
 
         //defense cannot be below 1 or else there will be a glitch
@@ -144,15 +166,19 @@ public class EnemiesReceiveDamage : MonoBehaviour {
             SetHealth(calculator);
         }
 
-        //fire damage
-        if (col.gameObject.tag == "Flame")
+        //ice damage
+        if (col.gameObject.tag == "Ice")
         {
             hPTimer = 3;
             hPBar.SetActive(true);
-            hp -= _player.GetComponent<CombatScript>().fireDamage * Time.deltaTime;
+            hp -= _player.GetComponent<CombatScript>().iceDamage * Time.deltaTime;
             calculator = hp / maxHp;
             SetHealth(calculator);
-            burning = 3;
+            if (!frozen)
+            {
+                FreezeEnemy();
+            }
+            //burning = 3;
 
         }
         //pysical damage
@@ -255,7 +281,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         hPTimer = 3;
         hPBar.SetActive(true);
         //dealing damage to object
-        if (ar.gameObject.tag == "Arrow")
+        if (ar.gameObject.tag == "Fireball")
         {
             //using calculations to determine the chance of landing a hit.
             //this also makes sure that chance of hitting cannot be greater or less than a set amount.
@@ -344,5 +370,19 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         //"myHealth" needs to be set between the values of 0 and 1: 1 being 100%.
         healthBar.transform.localScale = new Vector3(myHealth, healthBar.transform.localScale.y, healthBar.transform.localScale.z);
         healthBar.color = Color.Lerp(endColor, startColor, calculator);
+    }
+
+    void FreezeEnemy()
+    {
+        if(gameObject.tag == "Enemy")
+        {
+            gameObject.GetComponent<AISmall>().movingSpeed = 2;
+            frozen = true;
+        }        
+    }
+
+    void ThawEnemy()
+    {
+        gameObject.GetComponent<AISmall>().movingSpeed = 8;
     }
 }
