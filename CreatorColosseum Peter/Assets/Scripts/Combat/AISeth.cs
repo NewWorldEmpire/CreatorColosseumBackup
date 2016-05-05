@@ -22,6 +22,7 @@ public class AISeth : MonoBehaviour {
 	public int resetPoint;
 
 	public GameObject _player;
+	public GameObject _level;
 
 	public bool xReached;
 	public bool yReached;
@@ -52,9 +53,9 @@ public class AISeth : MonoBehaviour {
 			AttackPhase ();
 		}
 
-		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
+		if (this.gameObject.GetComponent<EnemiesReceiveDamage>().hp <= 0) 
 		{
-			Camera.main.GetComponent<Transitions>().levelSelect ++;
+			_level.GetComponent<Transitions>().levelSelect ++;
 		}
 	}
 

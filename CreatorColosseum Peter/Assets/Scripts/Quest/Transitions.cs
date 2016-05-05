@@ -30,7 +30,7 @@ public class Transitions : MonoBehaviour
     private float wait;
 
 	public int	levelSelect = 1;
-	public  bool sethTransition;
+	private bool sethTransition;
 	private bool emilTransition;
 	private bool runOnce = true;
 
@@ -51,11 +51,11 @@ public class Transitions : MonoBehaviour
     {
 		if (levelSelect == 2 && sethTransition)
         {
-			StartTransition(sethEnemies, sethEnemiesList, mikeEnemiesList, backgroundArray[1], foregroundArray[1]);
+			sethTransition = StartTransition(sethEnemies, sethEnemiesList, mikeEnemiesList, backgroundArray[1], foregroundArray[1]);
         }
 		else if (levelSelect == 3 && emilTransition)
         {
-			StartTransition(emilEnemies, emilEnemiesList, sethEnemiesList, backgroundArray[2], foregroundArray[2]);
+			emilTransition = StartTransition(emilEnemies, emilEnemiesList, sethEnemiesList, backgroundArray[2], foregroundArray[2]);
         }
 		//else if (levelSelect == 3)
         //{
@@ -64,10 +64,8 @@ public class Transitions : MonoBehaviour
     }
   
 
-    void StartTransition(GameObject enemies, GameObject enemyList, GameObject previousList, Sprite nextBackground, Sprite nextForeground)
+   	bool StartTransition(GameObject enemies, GameObject enemyList, GameObject previousList, Sprite nextBackground, Sprite nextForeground)
     {
-		print (sethTransition);
-
 		if (runOnce) 
 		{
 			wait = Time.time;
@@ -85,16 +83,19 @@ public class Transitions : MonoBehaviour
 		}
         Debug.Log("Peter is only ok");
         
-		if(Time.time > wait + 5)
-        {
-			background.GetComponent<SpriteRenderer>().sprite = nextBackground;
-			foreground.GetComponent<SpriteRenderer>().sprite = nextForeground;
-			enemies.SetActive(true);
+		if (Time.time > wait + 5) 
+		{
+			background.GetComponent<SpriteRenderer> ().sprite = nextBackground;
+			foreground.GetComponent<SpriteRenderer> ().sprite = nextForeground;
+			enemies.SetActive (true);
 			enemyList.SetActive (true);
-			EndTransition();
-			sethTransition = false;
+			EndTransition ();
 
-
+			return false;
+		} 
+		else 
+		{
+			return true;
 		}
     }
 

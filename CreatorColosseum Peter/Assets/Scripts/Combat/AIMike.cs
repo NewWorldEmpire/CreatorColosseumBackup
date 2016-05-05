@@ -44,7 +44,7 @@ public class AIMike : MonoBehaviour {
 			}
 		}
 
-		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
+		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp <= 0) 
 		{
 			levelSelect.GetComponent<Transitions>().levelSelect ++;
 		}

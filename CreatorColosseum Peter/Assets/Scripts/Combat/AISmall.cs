@@ -101,7 +101,7 @@ public class AISmall : MonoBehaviour {
 			//do nothing
 		}
 			
-		
+
 	}
 
 	void AttackPhase()
