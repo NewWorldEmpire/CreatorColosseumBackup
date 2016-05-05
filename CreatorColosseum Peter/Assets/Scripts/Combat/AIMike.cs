@@ -3,10 +3,12 @@ using System.Collections;
 
 public class AIMike : MonoBehaviour {
 
+	public GameObject levelSelect;
+
 	public float 	movingSpeed;
 	public float	fireFreq;
 	private float	xPos;
-	private float lastShot;
+	private float 	lastShot;
 
 	private int		randomY;
 	public int		yMin;
@@ -44,7 +46,7 @@ public class AIMike : MonoBehaviour {
 
 		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp < 0) 
 		{
-			Camera.main.GetComponent<Transitions>().levelSelect ++;
+			levelSelect.GetComponent<Transitions>().levelSelect ++;
 		}
 	
 	}

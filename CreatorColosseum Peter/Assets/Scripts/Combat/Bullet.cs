@@ -4,6 +4,7 @@ using System.Collections;
 public class Bullet : MonoBehaviour {
 
 	public GameObject _player;
+	public GameObject levelSelect;
 
 	public int movingSpeed;
 	public int bulletDamage;
@@ -24,6 +25,11 @@ public class Bullet : MonoBehaviour {
 		if (this.gameObject.activeSelf)
 		{
 			MovePhase();
+		}
+
+		if (levelSelect.GetComponent<Transitions> ().levelSelect > 1) 
+		{
+			destination =  new Vector2 (500, 0);
 		}
 	
 	}

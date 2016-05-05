@@ -102,8 +102,8 @@ public class AISeth : MonoBehaviour {
 		
 		MovePhase (destination, resetSpeed);
 
-		print (wait + ": wait");
-		print (Time.time + ": time");
+		//print (wait + ": wait");
+		//print (Time.time + ": time");
 
 		if ((Time.time - wait) > (waitTime + 3.5)) //3.5 to compinsiate for getting to point
 		{

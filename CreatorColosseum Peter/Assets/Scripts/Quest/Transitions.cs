@@ -3,10 +3,14 @@ using System.Collections;
 
 public class Transitions : MonoBehaviour
 {
+	public AudioSource music;
+	public AudioClip battleMusic;
     public GameObject map;
     public GameObject canvas;
     public GameObject player;
-    public GameObject cam;
+	public GameObject mouse;
+	public GameObject mainCam;
+    public GameObject cutsceneCam;
 
 	public Sprite[] backgroundArray;
 	public Sprite[] foregroundArray;
@@ -28,7 +32,7 @@ public class Transitions : MonoBehaviour
 	public int	levelSelect = 1;
 	public  bool sethTransition;
 	private bool emilTransition;
-	private bool mikeTime = true;
+	private bool runOnce = true;
 
     public bool hasDied;
     void Start ()
@@ -47,11 +51,11 @@ public class Transitions : MonoBehaviour
     {
 		if (levelSelect == 2 && sethTransition)
         {
-			StartTransition(sethEnemies, backgroundArray[1], foregroundArray[1]);
+			StartTransition(sethEnemies, sethEnemiesList, mikeEnemiesList, backgroundArray[1], foregroundArray[1]);
         }
 		else if (levelSelect == 3 && emilTransition)
         {
-			StartTransition(emilEnemies, backgroundArray[2], foregroundArray[2]);
+			StartTransition(emilEnemies, emilEnemiesList, sethEnemiesList, backgroundArray[2], foregroundArray[2]);
         }
 		//else if (levelSelect == 3)
         //{
@@ -60,38 +64,50 @@ public class Transitions : MonoBehaviour
     }
   
 
-    void StartTransition(GameObject enemyList, Sprite nextBackground, Sprite nextForeground)
+    void StartTransition(GameObject enemies, GameObject enemyList, GameObject previousList, Sprite nextBackground, Sprite nextForeground)
     {
 		print (sethTransition);
 
-		if (mikeTime) 
+		if (runOnce) 
 		{
 			wait = Time.time;
 			print (wait + ": wait");
-			mikeTime = false;
+			Camera.main.gameObject.SetActive (false);
+			cutsceneCam.SetActive (true);
+			player.transform.position = new Vector3 (-35, -50, 0);
+			previousList.SetActive(false);
+			map.SetActive(true);
+			canvas.SetActive(false);
+			player.SetActive(false);
+			mouse.SetActive (false);
+			print("Run Once");
+			runOnce = false;
 		}
-
         Debug.Log("Peter is only ok");
-		//print (Time.time + ": time");
-        map.SetActive(true);
-        canvas.SetActive(false);
-        player.SetActive(false);
         
 		if(Time.time > wait + 5)
         {
 			background.GetComponent<SpriteRenderer>().sprite = nextBackground;
 			foreground.GetComponent<SpriteRenderer>().sprite = nextForeground;
+			enemies.SetActive(true);
 			enemyList.SetActive (true);
 			EndTransition();
 			sethTransition = false;
+
+
 		}
     }
 
     void EndTransition()
     {
+		mainCam.SetActive (true);
+		cutsceneCam.SetActive (false);
 		canvas.SetActive (true);
 		player.SetActive (true);
+		mouse.SetActive (true);
 		map.SetActive (false);
+		music.clip = battleMusic;
+		music.Play ();
 	}
 
  }
