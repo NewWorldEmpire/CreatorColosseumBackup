@@ -5,7 +5,7 @@ public class LoadMainMenu : MonoBehaviour {
 
 	public void LoadMMenu()
 	{
-		Debug.Log ("loaded main menu");
+//		Debug.Log ("loaded main menu");
         Application.LoadLevel("StartMenu");
 	}
 }

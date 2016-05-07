@@ -60,13 +60,13 @@ public class AISeth : MonoBehaviour {
 		{
 			if (transform.position.x > _player.transform.position.x) 
 			{
-				print ("GO LEFT: " + grabPlayerY);
+				//print ("GO LEFT: " + grabPlayerY);
 				destination = new Vector2 (xMin - 20, transform.position.y);
 				resetPoint = xMin + 20;
 			}
 			else 
 			{
-				print ("GO RIGHT: " + grabPlayerY);
+				//print ("GO RIGHT: " + grabPlayerY);
 				destination = new Vector2 (xMax + 20, transform.position.y);
 				resetPoint = xMax - 20;
 			}
@@ -78,7 +78,7 @@ public class AISeth : MonoBehaviour {
 
 		if (yReached && xReached) 
 		{
-			print ("Hello!");
+			//print ("Hello!");
 			isAttack = false;
 			isReset = true;
 			grabPlayerY = false;
@@ -97,14 +97,14 @@ public class AISeth : MonoBehaviour {
 		
 		MovePhase (destination, resetSpeed);
 
-		print (wait + ": wait");
-		print (Time.time + ": time");
+		//print (wait + ": wait");
+		//print (Time.time + ": time");
 
 		if ((Time.time - wait) > (waitTime + 3.5)) //3.5 to compinsiate for getting to point
 		{
 			if (yReached && xReached) 
 			{
-				print ("Hello!");
+//				print ("Hello!");
 				isAttack = true;
 				isReset = false;
 				grabPlayerY = false;
