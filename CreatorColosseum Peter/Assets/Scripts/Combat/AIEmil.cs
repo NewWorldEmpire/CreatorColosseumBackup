@@ -22,12 +22,16 @@ public class AIEmil : MonoBehaviour {
 
 	public Vector2	destination;
 	public Vector2  playerPosition;
-
-	public Vector3  bigLaserPoint = new Vector3 (-120, -45);
+	public Vector2	facePosition;
+	public Vector2 	tempVector;
+	public Vector2  bigLaserPoint = new Vector2 (-120, -45);
 
 	public GameObject	_player;
 	public GameObject	_face;
 	public GameObject 	_laser;
+
+	public Collider2D	smallLaserCollider;
+	public Collider2D	bigLaserCollider;
 
 	public Sprite currentFace;
 	public Sprite face1;
@@ -49,7 +53,7 @@ public class AIEmil : MonoBehaviour {
 	void Update () 
 	{
 		SelectFace ();
-		//transform.LookAt (_player.transform.position);
+
 		if (!yReached)
 			DescendPhase ();
 		else 
@@ -62,8 +66,6 @@ public class AIEmil : MonoBehaviour {
 				BigLaser();
 
 		}
-			
-
 	}
 
 	void DescendPhase()
@@ -93,9 +95,7 @@ public class AIEmil : MonoBehaviour {
 
 		if ((Time.time - wait) > smallLaserDelay) 
 		{
-			_laser.SetActive(true);
-			_laser.GetComponent<LineRenderer> ().SetPosition (0, this.transform.position);
-			_laser.GetComponent<LineRenderer> ().SetPosition (1, playerPosition);
+			CreateSmallLaser();
 		}
 
 		if ((Time.time - wait) > (smallLaserDelay + smallLaserDuration)) 
@@ -105,7 +105,6 @@ public class AIEmil : MonoBehaviour {
 			grabPosition = false;
 			laserNum ++;
 		}
-
 	}
 
 	void BigLaser()
@@ -125,10 +124,7 @@ public class AIEmil : MonoBehaviour {
 		
 		if ((Time.time - wait) > bigLaserDelay) 
 		{
-			_laser.SetActive(true);
-			_laser.GetComponent<LineRenderer>().SetWidth (10, 10);
-			_laser.GetComponent<LineRenderer> ().SetPosition (0, this.transform.position);
-			_laser.GetComponent<LineRenderer> ().SetPosition (1, bigLaserPoint);
+			CreateBigLaser();
 		}
 		
 		if ((Time.time - wait) > (bigLaserDelay + bigLaserDuration)) 
@@ -137,7 +133,6 @@ public class AIEmil : MonoBehaviour {
 			grabTime = false;
 			grabPosition = false;
 			_face.GetComponent<SpriteRenderer>().color = Color.clear;
-			_laser.GetComponent<LineRenderer>().SetWidth (2, 2);
 			laserNum = 1;
 		}
 	}
@@ -147,17 +142,50 @@ public class AIEmil : MonoBehaviour {
 		if (_player.transform.position.y > topDivider) 
 		{
 			currentFace = face1;
+			facePosition = _face.transform.position;
 		}
 		else if (_player.transform.position.y > bottomDivider)
 		{
 			currentFace = face2;
+			facePosition = _face.transform.position;
 		} 
 		else 
 		{
 			currentFace = face3;
+			facePosition = _face.transform.position;
 		}
 
 		_face.GetComponent<SpriteRenderer> ().sprite = currentFace;
+	}
+
+	void CreateSmallLaser()
+	{
+		_laser.SetActive(true);
+		smallLaserCollider.gameObject.SetActive (true);
+		bigLaserCollider.gameObject.SetActive (false);
+
+		_laser.GetComponent<LineRenderer>().SetWidth (2, 2);
+
+		_laser.GetComponent<LineRenderer> ().SetPosition (0, facePosition);
+		_laser.GetComponent<LineRenderer> ().SetPosition (1, playerPosition);
+		smallLaserCollider.transform.position = playerPosition;
+	}
+
+	void CreateBigLaser()
+	{
+		_laser.SetActive(true);
+		smallLaserCollider.gameObject.SetActive (false);
+		bigLaserCollider.gameObject.SetActive (true);
+
+		_laser.GetComponent<LineRenderer>().SetWidth (10, 10);
+
+		tempVector = new Vector2 (this.transform.position.x, bigLaserPoint.y);
+		_laser.GetComponent<LineRenderer> ().SetPosition (0, tempVector);
+		_laser.GetComponent<LineRenderer> ().SetPosition (1, bigLaserPoint);
+
+		tempVector = new Vector2 (0, bigLaserPoint.y);
+		bigLaserCollider.transform.position = tempVector;
+
 	}
 }
 
