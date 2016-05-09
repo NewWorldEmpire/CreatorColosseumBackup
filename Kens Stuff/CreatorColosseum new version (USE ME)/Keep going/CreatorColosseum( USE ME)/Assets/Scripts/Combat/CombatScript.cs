@@ -180,6 +180,20 @@ public class CombatScript : MonoBehaviour
         au_light.clip = light;
     }
 
+	public void CheatCodes()
+	{
+		health = maxHealth;
+
+		shieldCoolDownLength = shieldCoolDown;
+		shieldCoolDown = 0;
+		iceCoolDownLength = iceCoolDown;
+		iceCoolDown = 0;
+		lightCoolDownLength = lightCoolDown;
+		lightCoolDown = 0;
+		restoreCoolDownLength = restoreCoolDown;
+		restoreCoolDown = 0;
+	}
+
     // Update is called once per frame
     void Update()
     {
