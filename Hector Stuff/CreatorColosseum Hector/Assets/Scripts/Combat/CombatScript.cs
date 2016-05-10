@@ -16,7 +16,7 @@ public class CombatScript : MonoBehaviour
     [HideInInspector]
     public float playerDamage = 3;
     //[HideInInspector]
-    public float fireDamage = 0.02f;
+    public float iceDamage = 0.02f;
     public float lightDamage = 200.0f;
     public float attackSpeed = 5.0f;
     public int defense;
@@ -30,7 +30,7 @@ public class CombatScript : MonoBehaviour
     public float criticalChance;
     [Range(2, 5)]
     public int criticalDamage;
-    private float chargeMultiplier = 100.0f;
+    public float chargeMultiplier = 10.0f;
     [HideInInspector]
     public float chargeDistance;
     public bool melee = true;
@@ -60,28 +60,35 @@ public class CombatScript : MonoBehaviour
     public bool casting = false;
 
     //**spellcooldowns
-    float shieldCoolDown;
-    float restoreCoolDown;
-    float fireCoolDown;
-    float lightCoolDown;
+    public float shieldCoolDown;
+    public float restoreCoolDown;
+    public float iceCoolDown;
+    public float lightCoolDown;
+
     //**Spell Timers**
     float shieldTimer;
-    [HideInInspector]
-    public float restoreTimer;
-    float fireTimer;
+    float restoreTimer;
+    float iceTimer;
 
+    //Keeps track of the cooldown length
+    float shieldCoolDownLength;
+    float iceCoolDownLength;
+    float lightCoolDownLength;
+    float restoreCoolDownLength;
 
     //**image cooldowns**
     public Image CoolDownImageShield;
     public Image CoolDownImageRestore;
-    public Image CoolDownImageFire;
+    public Image CoolDownImageIce;
     public Image CoolDownImageLight;
-
 
     [HideInInspector]
     public int splash;
     [HideInInspector]
     public float attackRate;  //rate of attack
+
+    //animation
+    public Animator anim;
 
     //**AUDIOS SOURCES**
     [HideInInspector]
@@ -101,16 +108,25 @@ public class CombatScript : MonoBehaviour
     [HideInInspector]
     public AudioSource au_light;
 
-
     void Awake()
     {
-
         health = maxHealth;
     }
 
     // Use this for initialization
     void Start()
     {
+        anim = GetComponent<Animator>();
+
+        shieldCoolDownLength = shieldCoolDown;
+        shieldCoolDown = 0;
+        iceCoolDownLength = iceCoolDown;
+        iceCoolDown = 0;
+        lightCoolDownLength = lightCoolDown;
+        lightCoolDown = 0;
+        restoreCoolDownLength = restoreCoolDown;
+        restoreCoolDown = 0;
+
         au_bow1 = gameObject.AddComponent<AudioSource>();
         AudioClip bow1;
 
@@ -162,55 +178,18 @@ public class CombatScript : MonoBehaviour
 
         light = (AudioClip)Resources.Load("Audio/Spells/magicLightningSoundEffect", typeof(AudioClip));
         au_light.clip = light;
-
-
-
-
-
     }
 
     // Update is called once per frame
     void Update()
     {
         //turn casting for animations off
-        if (casting = true && restoreTimer == 0)
+        if (casting == true && restoreTimer <= 0)
+        {
+            restoreTimer = 0;
             casting = false;
-
-        //if (casting == true)
-        //{
-        //    //SpellCast animation
-        //    if (self.GetComponent<PlayerMovement>().moveRight == true)
-        //    {
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastRight", true);
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkRight", false);
-
-
-        //        self.GetComponent<PlayerMovement>().anim.Play("WalkLeft");
-
-        //    }
-        //    if (self.GetComponent<PlayerMovement>().moveLeft == true)
-        //    {
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastLeft", true);
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkLeft", false);
-        //        self.GetComponent<PlayerMovement>().anim.Play("WalkRight");
-        //    }
-
-        //    if (self.GetComponent<PlayerMovement>().moveUp == true)
-        //    {
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastUp", true);
-        //        ;
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkUp", false);
-        //        self.GetComponent<PlayerMovement>().anim.Play("WalkDown");
-        //    }
-
-        //    if (self.GetComponent<PlayerMovement>().moveDown == true)
-        //    {
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("CastDown", true);
-        //        self.GetComponent<PlayerMovement>().anim.SetBool("WalkDown", false);
-        //        self.GetComponent<PlayerMovement>().anim.Play("WalkUp");
-        //    }
-        //}
-
+            anim.SetBool("PowerUp", false);
+        }
 
         //switching from melee to range
         if (Input.GetKeyUp(KeyCode.Q) && chargeShot <= 0)
@@ -218,13 +197,11 @@ public class CombatScript : MonoBehaviour
             if (melee == false)
             {
                 melee = true;
-                //print ("true");
             }
             //switching from range to melee
             else
             {
                 melee = false;
-                //print ("false");
             }
         }
 
@@ -252,7 +229,7 @@ public class CombatScript : MonoBehaviour
         if (criticalChance > 0.08f)
             criticalChance = 0.08f;
 
-        if (Input.GetMouseButtonDown(0) && attackRate == 0 && restoreTimer <= 0 && fireTimer <= 0) //left click
+        if (Input.GetMouseButtonDown(0) && attackRate == 0 && restoreTimer <= 0 && iceTimer <= 0) //left click
         {
             if (melee == true)
             {
@@ -267,40 +244,16 @@ public class CombatScript : MonoBehaviour
                     //since it's currently set to 1, only one foe can be hit at a time.
                     //certain spells, such as a multi attack, will require this variable to increase.
 
-
                     au_swing1.Play();
                     //attack animation
                     if (self.GetComponent<PlayerMovement>().moveRight == true)
                     {
-                        self.GetComponent<PlayerMovement>().anim.SetBool("MeleeRight", true);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("Right", false);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("WalkRight", false);
-                        //	self.GetComponent<PlayerMovement>().anim.Play("WalkLeft");
-
+                        self.GetComponent<PlayerMovement>().anim.SetBool("Attack", true);
                     }
 
                     if (self.GetComponent<PlayerMovement>().moveLeft == true)
                     {
-                        self.GetComponent<PlayerMovement>().anim.SetBool("MeleeLeft", true);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("Left", false);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("WalkLeft", false);
-                        //	self.GetComponent<PlayerMovement>().anim.Play("WalkRight");
-                    }
-
-                    if (self.GetComponent<PlayerMovement>().moveUp == true)
-                    {
-                        self.GetComponent<PlayerMovement>().anim.SetBool("MeleeUp", true);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("Up", false);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("WalkUp", false);
-                        //	self.GetComponent<PlayerMovement>().anim.Play("WalkDown");
-                    }
-
-                    if (self.GetComponent<PlayerMovement>().moveDown == true)
-                    {
-                        self.GetComponent<PlayerMovement>().anim.SetBool("MeleeDown", true);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("Down", false);
-                        //	self.GetComponent<PlayerMovement>().anim.SetBool ("WalkDown", false);
-                        //	self.GetComponent<PlayerMovement>().anim.Play("WalkUp");
+                        self.GetComponent<PlayerMovement>().anim.SetBool("Attack", true);
                     }
                 }
 
@@ -313,22 +266,27 @@ public class CombatScript : MonoBehaviour
                     playerDamage = normalDamage * chargeMultiplier;
                     splash = 5;
                     self.GetComponent<PlayerMovement>().moveSpeed = self.GetComponent<PlayerMovement>().moveSpeed * 25;
-                    //self.GetComponent<PlayerMovement>().moveY = self.GetComponent<PlayerMovement>().moveY * 25;
+
+                    if(self.GetComponent<PlayerMovement>().stamina >= 4)
+                    {
+                        self.GetComponent<PlayerMovement>().stamina = self.GetComponent<PlayerMovement>().stamina - 4;
+                    }
+                    
                     smokeChild.SetActive(true);
                 }
             }
         }
 
         //charging the bow
-        if (Input.GetMouseButton(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && fireTimer <= 0)
+        if (Input.GetMouseButton(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && iceTimer <= 0)
         {
+            anim.SetBool("AttackSpell", true);
+
             self.GetComponent<PlayerMovement>().moveSpeed = 0;
-            //self.GetComponent<PlayerMovement>().moveY = 0;
             if (chargeShot <= 0)
             {
                 au_bow1.Play();
             }
-
 
             energy.SetActive(true);
             if (chargeShot < 1.0f)
@@ -338,7 +296,6 @@ public class CombatScript : MonoBehaviour
             playerDamage = rangeDamage * chargeShot * 2;
             calculator = chargeShot / 1.0f;
             SetEnergy(calculator);
-            //print ("charge is... " + chargeShot);
 
             if (!target)
                 target = GameObject.FindWithTag("Mouse").transform;
@@ -354,106 +311,61 @@ public class CombatScript : MonoBehaviour
             //detecting arrow direction with the variable direction
             if (fAngle <= 135.0F && fAngle > 45.0F)
             {
-                //print ("up");
                 self.GetComponent<PlayerMovement>().moveUp = false;
                 self.GetComponent<PlayerMovement>().moveDown = false;
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
-
 
                 down.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
                 up.SetActive(true);
-                //bow animation
-                //self.GetComponent<PlayerMovement> ().anim.SetBool ("Up", true);
-                //self.GetComponent<PlayerMovement> ().anim.SetBool ("Down", false);
-                //	self.GetComponent<PlayerMovement> ().anim.SetBool ("Left", false);
-                //	self.GetComponent<PlayerMovement> ().anim.SetBool ("Right", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("UpBow", true);
-                self.GetComponent<PlayerMovement>().anim.SetBool("DownBow", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("LeftBow", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("RightBow", false);
             }
 
             if (fAngle <= 45.0F || fAngle > 315.0F)
             {
-                //print ("right");
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveDown = false;
                 self.GetComponent<PlayerMovement>().moveUp = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
-
-
 
                 up.SetActive(false);
                 down.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(true);
-
-                //bow animation
-                //self.GetComponent<PlayerMovement> ().anim.SetBool ("Up", false);
-                //self.GetComponent<PlayerMovement> ().anim.SetBool ("Down", false);
-                //self.GetComponent<PlayerMovement> ().anim.SetBool ("Left", false);
-                //	self.GetComponent<PlayerMovement> ().anim.SetBool ("Right", true);
-                self.GetComponent<PlayerMovement>().anim.SetBool("UpBow", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("DownBow", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("LeftBow", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("RightBow", true);
             }
 
             if (fAngle <= 225.0F && fAngle > 135.0F)
             {
-                //print ("left");
                 self.GetComponent<PlayerMovement>().moveLeft = false;
                 self.GetComponent<PlayerMovement>().moveDown = false;
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveUp = false;
-
-
 
                 up.SetActive(false);
                 down.SetActive(false);
                 right.SetActive(false);
                 left.SetActive(true);
-
-                //bow animation
-                //	self.GetComponent<PlayerMovement> ().anim.SetBool ("Up", false);
-                //	self.GetComponent<PlayerMovement> ().anim.SetBool ("Down", false);
-                //	self.GetComponent<PlayerMovement> ().anim.SetBool ("Left", true);
-                //	self.GetComponent<PlayerMovement> ().anim.SetBool ("Right", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("UpBow", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("DownBow", false);
-                self.GetComponent<PlayerMovement>().anim.SetBool("LeftBow", true);
-                self.GetComponent<PlayerMovement>().anim.SetBool("RightBow", false);
             }
 
             if (fAngle <= 315.0F && fAngle > 225.0F)
             {
-                //print ("down");
                 self.GetComponent<PlayerMovement>().moveDown = false;
                 self.GetComponent<PlayerMovement>().moveUp = false;
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
-
-
                 up.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
                 down.SetActive(true);
-
-
             }
         }
 
         //using arrows
-        if (Input.GetMouseButtonUp(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && fireTimer <= 0)
+        if (Input.GetMouseButtonUp(0) && melee == false && attackRate == 0 && restoreTimer <= 0 && iceTimer <= 0)
         {
-            self.GetComponent<PlayerMovement>().anim.SetBool("UpBow", false);
-            self.GetComponent<PlayerMovement>().anim.SetBool("DownBow", false);
-            self.GetComponent<PlayerMovement>().anim.SetBool("LeftBow", false);
-            self.GetComponent<PlayerMovement>().anim.SetBool("RightBow", false);
+            anim.SetBool("AttackSpell", false);
 
             au_bow1.Stop();
             au_arrow1.Play();
@@ -488,14 +400,11 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
-
                 clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
                 down.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
                 up.SetActive(true);
-                //bow animation
-
             }
 
             if (fAngle <= 45.0F || fAngle > 315.0F)
@@ -506,15 +415,11 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveUp = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
-
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(true);
-
-                //bow animation
-
             }
 
             if (fAngle <= 225.0F && fAngle > 135.0F)
@@ -525,15 +430,11 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveUp = false;
 
-
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 right.SetActive(false);
                 left.SetActive(true);
-
-                //bow animation
-
             }
 
             if (fAngle <= 315.0F && fAngle > 225.0F)
@@ -544,13 +445,11 @@ public class CombatScript : MonoBehaviour
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
-
                 clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(15, 20);
                 up.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
                 down.SetActive(true);
-
             }
         }
 
@@ -560,14 +459,15 @@ public class CombatScript : MonoBehaviour
             attackRate -= attackSpeed * Time.deltaTime;
             //prevents moving during attack
             self.GetComponent<PlayerMovement>().moveSpeed = 0;
-            //self.GetComponent<PlayerMovement>().moveY = 0;
         }
+
+        if (attackRate == 0)
+            self.GetComponent<PlayerMovement>().anim.SetBool("Attack", false);
 
         if (attackRate < 0)
             attackRate = 0;
         if (attackSpeed > 50)
             attackSpeed = 50;
-
 
         if (defense < 1)
             defense = 1;
@@ -582,28 +482,24 @@ public class CombatScript : MonoBehaviour
             chargeDistance = 0;
         }
 
-
         //*******MAGIC SPELLS***********
 
-        //casting fire  (Firestorm)
-        if (fireTimer > 0)
-            fireTimer -= 5 * Time.deltaTime;
+        //casting ice  (icestorm)
+        if (iceTimer > 0)
+            iceTimer -= 5 * Time.deltaTime;
 
-        if (fireTimer <= 0 && fireCoolDown > 0)
+        if (iceTimer <= 0 && iceCoolDown > 0)
         {
-            fireCoolDown -= 10 * Time.deltaTime;
-            calculator4 = fireCoolDown / 100;
-            CoolDownFire(calculator4);
-        }
-        if (fireCoolDown < 0)
-        {
-            fireCoolDown = 0;
-            calculator4 = fireCoolDown / 100;
-            CoolDownFire(calculator4);
+            iceCoolDown -= 1 * Time.deltaTime;
+            calculator4 = iceCoolDown / iceCoolDownLength;
+            CoolDownice(calculator4);
         }
 
-        if (fireTimer < 0)
-            fireTimer = 0;
+        if (iceTimer < 0)
+        {
+            iceTimer = 0;
+            anim.SetBool("AttackSpell", false);
+        }
 
         if (!Input.GetMouseButton(1) && au_flame1.isPlaying)
         {
@@ -611,17 +507,18 @@ public class CombatScript : MonoBehaviour
             au_flame2.Play();
         }
 
-        if (Input.GetMouseButton(1) && spells == 0 && fireCoolDown < 100 && chargeShot <= 0 && attackRate <= 0)  //right click
+        if (Input.GetMouseButton(1) && spells == 0 && iceCoolDown < iceCoolDownLength && chargeShot <= 0 && attackRate <= 0)  //right click
         {
-            if (fireCoolDown < 100)
-                fireCoolDown += 40 * Time.deltaTime;
-            calculator4 = fireCoolDown / 100;
-            CoolDownFire(calculator4);
-            fireTimer = 1;
+            anim.SetBool("AttackSpell", true);
+
+            if (iceCoolDown < iceCoolDownLength)
+                iceCoolDown += 2 * Time.deltaTime;
+            calculator4 = iceCoolDown / iceCoolDownLength;
+            CoolDownice(calculator4);
+            iceTimer = 1;
 
             //prevent player from moving
             self.GetComponent<PlayerMovement>().moveSpeed = 0;
-            //self.GetComponent<PlayerMovement>().moveY = 0;
 
             if (!target)
                 target = GameObject.FindWithTag("Mouse").transform;
@@ -645,20 +542,16 @@ public class CombatScript : MonoBehaviour
 
             casting = true;
 
-
             //flame goes in the direction of the mouse
-
-
             if (fAngle <= 135.0F && fAngle > 45.0F)
             {
-                //print ("up");
+                //up
                 self.GetComponent<PlayerMovement>().moveUp = true;
                 self.GetComponent<PlayerMovement>().moveDown = false;
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
-
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 down.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
@@ -667,14 +560,13 @@ public class CombatScript : MonoBehaviour
 
             if (fAngle <= 45.0F || fAngle > 315.0F)
             {
-                //print ("right");
+                //right
                 self.GetComponent<PlayerMovement>().moveRight = true;
                 self.GetComponent<PlayerMovement>().moveDown = false;
                 self.GetComponent<PlayerMovement>().moveUp = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
-
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 left.SetActive(false);
@@ -683,14 +575,13 @@ public class CombatScript : MonoBehaviour
 
             if (fAngle <= 225.0F && fAngle > 135.0F)
             {
-                //print ("left");
+                //left
                 self.GetComponent<PlayerMovement>().moveLeft = true;
                 self.GetComponent<PlayerMovement>().moveDown = false;
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveUp = false;
 
-
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 down.SetActive(false);
                 right.SetActive(false);
@@ -699,41 +590,37 @@ public class CombatScript : MonoBehaviour
 
             if (fAngle <= 315.0F && fAngle > 225.0F)
             {
-                //print ("down");
+                //down
                 self.GetComponent<PlayerMovement>().moveDown = true;
                 self.GetComponent<PlayerMovement>().moveUp = false;
                 self.GetComponent<PlayerMovement>().moveRight = false;
                 self.GetComponent<PlayerMovement>().moveLeft = false;
 
-
-                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(7, 10);
+                clone.velocity = (GameObject.Find("Mouse").transform.position - transform.position).normalized * Random.Range(25, 30);
                 up.SetActive(false);
                 left.SetActive(false);
                 right.SetActive(false);
                 down.SetActive(true);
             }
         }
+
         //Restoration spell (Revivify)
         if (Input.GetMouseButtonDown(1) && spells == 1 && restoreCoolDown <= 0 && chargeShot <= 0 && attackRate <= 0)   //right click
         {
-            au_heal.Play();
-           // GameObject clone;
-            //clone = Instantiate(restorationPrefab, transform.position, transform.rotation) as GameObject;
-			//clone.transform.parent = transform;
-			//GameObject childObject = Instantiate(restorationPrefab) as GameObject;
-			//childObject.transform.parent = gameObject.transform;
+            casting = true;
+            anim.SetBool("PowerUp", true);
 
-			GameObject childObject = Instantiate(restorationPrefab, transform.position, transform.rotation) as GameObject;
-			childObject.transform.parent = gameObject.transform;
+            au_heal.Play();
+
+            GameObject childObject = Instantiate(restorationPrefab, transform.position, transform.rotation) as GameObject;
+            childObject.transform.parent = gameObject.transform;
 
             health += healthRestore;
             if (health > maxHealth)
                 health = maxHealth;
             restoreTimer = 3;
-            restoreCoolDown = 10.0f;
-
+            restoreCoolDown = restoreCoolDownLength;
         }
-
 
         if (restoreTimer > 0)
         {
@@ -741,32 +628,29 @@ public class CombatScript : MonoBehaviour
             restoreTimer -= 1 * Time.deltaTime;
             //prevent player from moving
             self.GetComponent<PlayerMovement>().moveSpeed = 0;
-            //self.GetComponent<PlayerMovement>().moveY = 0;
         }
         if (restoreCoolDown > 0)
         {
             restoreCoolDown -= 1 * Time.deltaTime;
-            calculator3 = restoreCoolDown / 10;
+            calculator3 = restoreCoolDown / restoreCoolDownLength;
             CoolDownRestore(calculator3);
         }
         if (restoreCoolDown < 0)
             restoreCoolDown = 0;
 
-
-
-
-
         //Cold Spell (StormShield)
         if (Input.GetMouseButton(1) && spells == 2 && shieldCoolDown <= 0 && chargeShot <= 0 && attackRate <= 0)  //right click
         {
+            casting = true;
+            anim.SetBool("PowerUp", true);
+
             shieldChild.SetActive(true);
-            shieldCoolDown = 50;
+            shieldCoolDown = shieldCoolDownLength;
             shieldTimer = 18;
             armor += shield;
 
             //prevent player from moving
             self.GetComponent<PlayerMovement>().moveSpeed = 0;
-            //self.GetComponent<PlayerMovement>().moveY = 0;
             restoreTimer = 1;
             casting = true;
         }
@@ -780,9 +664,10 @@ public class CombatScript : MonoBehaviour
         //shield timer
         if (shieldTimer >= 1)
             shieldTimer -= 1 * Time.deltaTime;
+        //shield Cooldown
         if (shieldCoolDown > 0)
         {
-            calculator2 = shieldCoolDown / 50;
+            calculator2 = shieldCoolDown / shieldCoolDownLength;
             CoolDownShield(calculator2);
             shieldCoolDown -= 1 * Time.deltaTime;
         }
@@ -792,27 +677,22 @@ public class CombatScript : MonoBehaviour
         //Spell 4 (Shock Wave)
         if (Input.GetMouseButtonDown(1) && spells == 3 && lightCoolDown <= 0 && chargeShot <= 0 && attackRate <= 0)   //right click
         {
+            casting = true;
+            restoreTimer = 1;            
+            anim.SetBool("PowerUp", true);
 
             _mouse.Lightning();
-            lightCoolDown = 80;
+            lightCoolDown = lightCoolDownLength;
             au_light.Play();
-            restoreTimer = 1;
-            casting = true;
-
-
-
         }
         if (lightCoolDown > 0)
         {
-            calculator4 = lightCoolDown / 80;
+            calculator4 = lightCoolDown / lightCoolDownLength;
             CoolDownLight(calculator4);
             lightCoolDown -= 1 * Time.deltaTime;
         }
         if (lightCoolDown < 0)
             lightCoolDown = 0;
-
-
-
 
         //**directional combat**
 
@@ -823,7 +703,6 @@ public class CombatScript : MonoBehaviour
             down.SetActive(false);
             left.SetActive(false);
             right.SetActive(true);
-
         }
 
         //facing left
@@ -833,7 +712,6 @@ public class CombatScript : MonoBehaviour
             down.SetActive(false);
             left.SetActive(true);
             right.SetActive(false);
-
         }
 
         //facing up
@@ -843,7 +721,6 @@ public class CombatScript : MonoBehaviour
             down.SetActive(false);
             left.SetActive(false);
             right.SetActive(false);
-
         }
 
         //facing down
@@ -871,10 +748,10 @@ public class CombatScript : MonoBehaviour
     {
         energyBar.transform.localScale = new Vector3(myEnergy, energyBar.transform.localScale.y, energyBar.transform.localScale.z);
     }
-    //fire cooldown calculations
-    public void CoolDownFire(float Fire)
+    //ice cooldown calculations
+    public void CoolDownice(float ice)
     {
-        CoolDownImageFire.transform.localScale = new Vector3(CoolDownImageFire.transform.localScale.x, calculator4, CoolDownImageFire.transform.localScale.z);
+        CoolDownImageIce.transform.localScale = new Vector3(CoolDownImageIce.transform.localScale.x, calculator4, CoolDownImageIce.transform.localScale.z);
     }
     //cooldown for restoration
     public void CoolDownRestore(float Restorex)

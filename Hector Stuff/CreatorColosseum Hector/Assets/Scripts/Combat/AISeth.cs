@@ -13,6 +13,7 @@ public class AISeth : MonoBehaviour {
 
 	public int xMin;
 	public int xMax;
+	private int armor;
 
 	public int yRange = 2;
 	public int xRange = 2;
@@ -21,6 +22,7 @@ public class AISeth : MonoBehaviour {
 	public int resetPoint;
 
 	public GameObject _player;
+	public GameObject _level;
 
 	public bool xReached;
 	public bool yReached;
@@ -50,6 +52,12 @@ public class AISeth : MonoBehaviour {
 		{
 			AttackPhase ();
 		}
+
+		if (this.gameObject.GetComponent<EnemiesReceiveDamage>().hp <= 0 &&!isDead) 
+		{
+			_level.GetComponent<Transitions>().levelSelect ++;
+            isDead = true;
+		}
 	}
 
 //------------attackphase()----------
@@ -59,13 +67,11 @@ public class AISeth : MonoBehaviour {
 		{
 			if (transform.position.x > _player.transform.position.x) 
 			{
-				print ("GO LEFT: " + grabPlayerY);
 				destination = new Vector2 (xMin - 20, transform.position.y);
 				resetPoint = xMin + 20;
 			}
 			else 
 			{
-				print ("GO RIGHT: " + grabPlayerY);
 				destination = new Vector2 (xMax + 20, transform.position.y);
 				resetPoint = xMax - 20;
 			}
@@ -77,7 +83,6 @@ public class AISeth : MonoBehaviour {
 
 		if (yReached && xReached) 
 		{
-			print ("Hello!");
 			isAttack = false;
 			isReset = true;
 			grabPlayerY = false;
@@ -88,18 +93,7 @@ public class AISeth : MonoBehaviour {
 	void ResetPhase()
 	{
 		if (!grabPlayerY) 
-		{ 
-            //reset poistive, left, reset negative, right
-            if(resetPoint > 0)
-            {
-                GetComponent<Animator>().SetBool("SethLeft", true);
-                GetComponent<Animator>().SetBool("SethRight", false);
-            }
-            else if (resetPoint < 0)
-            {
-                GetComponent<Animator>().SetBool("SethRight", true);
-                GetComponent<Animator>().SetBool("SethLeft", false);
-            }
+		{
 			destination = new Vector2 (resetPoint, _player.transform.position.y);
 			grabPlayerY = true;
 			wait = Time.time;
@@ -114,7 +108,6 @@ public class AISeth : MonoBehaviour {
 		{
 			if (yReached && xReached) 
 			{
-				print ("Hello!");
 				isAttack = true;
 				isReset = false;
 				grabPlayerY = false;
@@ -163,9 +156,10 @@ public class AISeth : MonoBehaviour {
 	void OnCollisionStay2D(Collision2D playerC)
 	{
 		if (isAttack) 
-		{
+		{ 
+			armor = _player.GetComponent<CombatScript> ().armor;
 			_player.GetComponent<PlayerReceivesDamage> ().InitiateCBT (chargeDamage.ToString ()).GetComponent<Animator> ().SetTrigger ("Hit"); //changed playerReceivesDamge
-			_player.GetComponent<CombatScript> ().health -= chargeDamage;
+			_player.GetComponent<CombatScript> ().health -= (chargeDamage - armor);
 		}
 	}
 }

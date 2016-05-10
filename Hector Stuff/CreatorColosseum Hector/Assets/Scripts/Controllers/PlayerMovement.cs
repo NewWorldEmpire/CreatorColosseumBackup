@@ -45,11 +45,8 @@ public class PlayerMovement : MonoBehaviour {
     //animation
     public Animator anim;
 
-    //const int LEFT_MOUSE_BUTTON = 0;
     void start()
     {
-
-
         anim = GetComponent<Animator>();
 
         stamina = maxStamina;
@@ -65,48 +62,24 @@ public class PlayerMovement : MonoBehaviour {
 
     void Update()
     {
-        //if (self.GetComponent<CombatScript>().attackRate == 0)
-        //{
-        //    anim.SetBool("MeleeLeft", false);
-        //    anim.SetBool("MeleeRight", false);
-        //    anim.SetBool("MeleeUp", false);
-        //    anim.SetBool("MeleeDown", false);
-        //}
-        //if (self.GetComponent<CombatScript>().casting == false)
-        //{
-        //    anim.SetBool("CastLeft", false);
-        //    anim.SetBool("CastRight", false);
-        //    anim.SetBool("CastUp", false);
-        //    anim.SetBool("CastDown", false);
-        //}
-
         transform.position = new Vector3(Mathf.Clamp(transform.position.x, xMin, xMax), Mathf.Clamp(transform.position.y, yMin, yMax), 0);
 
         // Only when left mouse button is not clicked, will the WSAD controls work.) 
         if (isSprinting == false)
         {
-            //anim.speed = 1.0f;
             moveSpeed = speed;
             //WSAD control
             moveX = Input.GetAxis("Horizontal") * speed * Time.deltaTime;
             moveY = Input.GetAxis("Vertical") * vertSpeed * Time.deltaTime;
-
         }
         else
         {
-            //anim.speed = 4.0f;
             moveSpeed = speed * sprint;
             stamina -= 1 * Time.deltaTime;
             staminaRecharge = 0;
             //sprinting and stamina drain
             moveX = Input.GetAxis("Horizontal") * speed * sprint * Time.deltaTime;
             moveY = Input.GetAxis("Vertical") * vertSpeed * sprint * Time.deltaTime;
-            //if (moveX != 0 || moveY != 0)
-            //{
-            //    stamina -= 1 * Time.deltaTime;
-            //    staminaRecharge = 0;
-            //}
-
         }
 
         transform.Translate(moveX, moveY, 0);
@@ -127,99 +100,46 @@ public class PlayerMovement : MonoBehaviour {
             moveDown = false;
         }
 
+        if (moveY > 0 || moveY < 0)
+        {
+            if (moveRight == true)
+                anim.SetBool("WalkRight", true);
+            if (moveLeft == true)
+                anim.SetBool("WalkLeft", true);
+        }
 
-        //if (self.GetComponent<CombatScript>().attackRate <= 0 && self.GetComponent<CombatScript>().casting == false)
-        //{
-        //    if (Input.GetKey(PlayerPrefs.GetString("MoveRight")))
-        //    {
-        //        transform.Translate(Vector3.right * moveSpeed * Time.deltaTime);
-        //        if (!Input.GetKey(PlayerPrefs.GetString("MoveLeft")) && !Input.GetKey(PlayerPrefs.GetString("MoveUp")) && !Input.GetKey(PlayerPrefs.GetString("MoveDown")))
-        //        {
-        //            anim.Play("WalkRight");
-        //        }
-        //        moveRight = true;
-        //        moveLeft = false;
-        //        moveUp = false;
-        //        moveDown = false;
-        //        anim.SetBool("WalkRight", true);
-        //        anim.SetBool("WalkDown", false);
-        //        anim.SetBool("WalkUp", false);
-        //        anim.SetBool("WalkLeft", false);
-        //        anim.speed = 1.0f;
 
-        //    }
-        //    else
-        //    {
-        //        anim.SetBool("WalkRight", false);
-        //        anim.SetBool("Right", true);
-        //    }
-        //    if (Input.GetKey(PlayerPrefs.GetString("MoveLeft")))
-        //    {
-        //        transform.Translate(Vector3.left * moveSpeed * Time.deltaTime);
-        //        if (!Input.GetKey(PlayerPrefs.GetString("MoveRight")) && !Input.GetKey(PlayerPrefs.GetString("MoveUp")) && !Input.GetKey(PlayerPrefs.GetString("MoveDown")))
-        //        {
-        //            anim.Play("WalkLeft");
-        //        }
-        //        moveRight = false;
-        //        moveLeft = true;
-        //        moveUp = false;
-        //        moveDown = false;
-        //        anim.SetBool("WalkLeft", true);
-        //        anim.SetBool("WalkRight", false);
-        //        anim.SetBool("WalkUp", false);
-        //        anim.SetBool("WalkDown", false);
-        //        anim.speed = 1.0f;
-        //    }
-        //    else
-        //    {
-        //        anim.SetBool("WalkLeft", false);
-        //        anim.SetBool("Left", true);
-        //    }
-        //    if (Input.GetKey(PlayerPrefs.GetString("MoveUp")))
-        //    {
-        //        transform.Translate(Vector3.up * moveSpeed * Time.deltaTime);
-        //        if (!Input.GetKey(PlayerPrefs.GetString("MoveLeft")) && !Input.GetKey(PlayerPrefs.GetString("MoveRight")) && !Input.GetKey(PlayerPrefs.GetString("MoveDown")))
-        //        {
-        //            anim.Play("WalkUp");
-        //        }
-        //        moveRight = false;
-        //        moveLeft = false;
-        //        moveUp = true;
-        //        moveDown = false;
-        //        anim.SetBool("WalkUp", true);
-        //        anim.SetBool("WalkDown", false);
-        //        anim.SetBool("WalkRight", false);
-        //        anim.SetBool("WalkLeft", false);
-        //        anim.speed = 1.0f;
-        //    }
-        //    else
-        //    {
-        //        anim.SetBool("WalkUp", false);
-        //        anim.SetBool("Up", true);
-        //    }
-        //    if (Input.GetKey(PlayerPrefs.GetString("MoveDown")))
-        //    {
-        //        transform.Translate(Vector3.down * moveSpeed * Time.deltaTime);
-        //        if (!Input.GetKey(PlayerPrefs.GetString("MoveLeft")) && !Input.GetKey(PlayerPrefs.GetString("MoveUp")) && !Input.GetKey(PlayerPrefs.GetString("MoveRight")))
-        //        {
-        //            anim.Play("WalkDown");
-        //        }
-        //        moveRight = false;
-        //        moveLeft = false;
-        //        moveUp = false;
-        //        moveDown = true;
-        //        //anim.SetBool("WalkDown", true);
-        //        //anim.SetBool("WalkRight", false);
-        //        //anim.SetBool("WalkUp", false);
-        //        //anim.SetBool("WalkLeft", false);
-        //        //anim.speed = 1.0f;
-        //    }
-        //    //else
-        //    //{
-        //    //    anim.SetBool("WalkDown", false);
-        //    //    anim.SetBool("Down", true);
-        //    //}
-        //}
+        if (self.GetComponent<CombatScript>().attackRate <= 0 && self.GetComponent<CombatScript>().casting == false)
+        {
+            if (moveX > 0)
+            {
+               moveRight = true;
+                moveLeft = false;
+                anim.SetBool("WalkRight", true);
+                anim.SetBool("WalkLeft", false);
+                anim.speed = 1.0f;
+            }
+            else
+            {
+                if (moveY == 0)
+                    anim.SetBool("WalkRight", false);
+                anim.SetBool("Right", true);
+            }
+            if (moveX < 0)
+            {
+                moveRight = false;
+                moveLeft = true;
+                anim.SetBool("WalkLeft", true);
+                anim.SetBool("WalkRight", false);
+                anim.speed = 1.0f;
+            }
+            else
+            {
+                if (moveY == 0)
+                    anim.SetBool("WalkLeft", false);
+                anim.SetBool("Left", true);
+            }
+        }
 
         //sprinting
         if (Input.GetKeyDown("space") && isSprinting == false && stamina > 0)
@@ -231,17 +151,10 @@ public class PlayerMovement : MonoBehaviour {
         if (stamina <= 0)
             isSprinting = false;
 
-
-                //use : transform.Translate(moveX, moveY, 0f); if we decide to go back to 3D
-
-
-        
-
         //stamina must recharge before it can recover
         if (staminaRecharge < 5)
         {
             staminaRecharge += 1 * Time.deltaTime;
-
             //if staminaRecharge should happen to go above 5
             if (staminaRecharge > 5)
                 staminaRecharge = 5;

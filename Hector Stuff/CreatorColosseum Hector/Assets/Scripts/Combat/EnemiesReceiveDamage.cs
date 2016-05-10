@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 
 public class EnemiesReceiveDamage : MonoBehaviour {
+
     public float maxHp;
     public float hp;
     private bool hit = false;
@@ -42,6 +43,8 @@ public class EnemiesReceiveDamage : MonoBehaviour {
     [HideInInspector]
     public AudioSource au_swordhit;
 
+    bool frozen;
+
 
 
     void Awake()
@@ -78,16 +81,12 @@ public class EnemiesReceiveDamage : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        //if (hPTimer <= 0)
-        //{
-        //    hPBar.SetActive(false);
-        //}
         if (hPTimer > 0)
         {
             hPTimer -= 1 * Time.deltaTime;
         }
 
-        //enemies catch fire after being burned
+        //enemies catch ice after being burned
         if (burning > 0 && hp > 0)
         {
             hPTimer = 3;
@@ -99,7 +98,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
 
             if (burning <= 2.8f)
             {
-                hp -= _player.GetComponent<CombatScript>().fireDamage * 4 * Time.deltaTime;
+                hp -= _player.GetComponent<CombatScript>().iceDamage * 4 * Time.deltaTime;
                 calculator = hp / maxHp;
                 SetHealth(calculator);
             }
@@ -110,29 +109,34 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                 burningChild.SetActive(false);
         }
 
+        if (frozen)
+        {
+            Invoke("ThawEnemy", Random.Range(3f, 6f));
+            frozen = false;
+        }
+
         //if health is zero below, object dies
         if (gameObject.tag == "Boss")
         {
+            if (dead)
+            {
+                gameObject.SetActive(false);
+                hPBar.SetActive(false);
+            }
             if (hp <= 0)
             {
                 dead = true;
-                gameObject.SetActive(false);
-                hPBar.SetActive(false);
+
             }
         }
         else
         {
-			if (this.transform.position.x < -100)
-			{
-				gameObject.SetActive(false);
-			}
             //if health is zero below, object dies
             if (hp <= 0 && nowDead)
             {
                 dead = true;
                 nowDead = false;
-				this.transform.position = new Vector3 (-500, 500, 0);
-                
+                gameObject.SetActive(false);
                 //Destroy(gameObject);
             }
         }
@@ -148,12 +152,6 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         }
 
     }
-	IEnumerator WAIT()
-	{
-		print ("Hello");
-		yield return new WaitForSeconds (0.2f);
-		print ("Now Dead");
-	}
 
     void OnTriggerStay2D(Collider2D col)
     {
@@ -161,22 +159,26 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         if (col.gameObject.tag == "Mouse" && col.gameObject.GetComponent<MouseScript>().hit == true)
         {
             col.gameObject.GetComponent<MouseScript>().hit = false;
-            damageTaken -= _player.GetComponent<CombatScript>().lightDamage;
+            damageTaken += _player.GetComponent<CombatScript>().lightDamage;
             InitCBT(damageTaken.ToString()).GetComponent<Animator>().SetTrigger("Hit");
-            hp += damageTaken;
+            hp -= damageTaken;
             calculator = hp / maxHp;
             SetHealth(calculator);
         }
 
-        //fire damage
-        if (col.gameObject.tag == "Flame")
+        //ice damage
+        if (col.gameObject.tag == "Ice")
         {
             hPTimer = 3;
             hPBar.SetActive(true);
-            hp -= _player.GetComponent<CombatScript>().fireDamage * Time.deltaTime;
+            hp -= _player.GetComponent<CombatScript>().iceDamage * Time.deltaTime;
             calculator = hp / maxHp;
             SetHealth(calculator);
-            burning = 3;
+            if (!frozen)
+            {
+                FreezeEnemy();
+            }
+            //burning = 3;
 
         }
         //pysical damage
@@ -218,11 +220,11 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                     hit = true;
                     damageTaken = _player.GetComponent<CombatScript>().playerDamage;
                     if (damageTaken > armor + 1)
-                        damageTaken = damageTaken - armor;
+                        damageTaken = damageTaken + armor;
                     else
                         damageTaken = 2;
                     damageTaken = Random.Range(damageTaken * 0.7f, damageTaken);
-                    damageTaken = -damageTaken;
+                    //damageTaken = -damageTaken;
                     criticalHit = Random.Range(0, 1.0f);
                     //print ("crit" + criticalHit);
 
@@ -233,7 +235,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                         damageTaken = Mathf.Round(damageTaken * 1.0f) / 1.0f;
                         InitCBT(damageTaken.ToString()).GetComponent<Animator>().SetTrigger("Crit");
                         //print ("damageTaken " + damageTaken);
-                        hp += damageTaken;
+                        hp -= damageTaken;
                         calculator = hp / maxHp;
                         SetHealth(calculator);
                         criticalHit = 2;
@@ -245,7 +247,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                         damageTaken = Mathf.Round(damageTaken * 1.0f) / 1.0f;
                         //print ("damageTaken " + damageTaken);
                         InitCBT(damageTaken.ToString()).GetComponent<Animator>().SetTrigger("Hit");
-                        hp += damageTaken;
+                        hp -= damageTaken;
                         calculator = hp / maxHp;
                         SetHealth(calculator);
                         criticalHit = 2;
@@ -269,17 +271,13 @@ public class EnemiesReceiveDamage : MonoBehaviour {
 
     }
 
-
-
-
     //range damage (very similar to melee).
     void OnTriggerEnter2D(Collider2D ar)
     {
-
         hPTimer = 3;
         hPBar.SetActive(true);
         //dealing damage to object
-        if (ar.gameObject.tag == "Arrow")
+        if (ar.gameObject.tag == "iceball")
         {
             //using calculations to determine the chance of landing a hit.
             //this also makes sure that chance of hitting cannot be greater or less than a set amount.
@@ -309,11 +307,11 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                 //damageTaken = _player.GetComponent<CombatScript>().playerDamage;
                 damageTaken = ar.GetComponent<ArrowScript>().myDMG;
                 if (damageTaken > armor + 1)
-                    damageTaken = damageTaken - armor;
+                    damageTaken = damageTaken + armor;
                 else
                     damageTaken = 2;
                 damageTaken = Random.Range(damageTaken * 0.7f, damageTaken);
-                damageTaken = -damageTaken;
+                //damageTaken = -damageTaken;
                 criticalHit = Random.Range(0, 1.0f);
 
 
@@ -323,7 +321,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                     damageTaken = (damageTaken * _player.GetComponent<CombatScript>().criticalDamage);
                     damageTaken = Mathf.Round(damageTaken * 1.0f) / 1.0f;
                     InitCBT(damageTaken.ToString()).GetComponent<Animator>().SetTrigger("Crit");
-                    hp += damageTaken;
+                    hp -= damageTaken;
                     calculator = hp / maxHp;
                     SetHealth(calculator);
                     criticalHit = 2;
@@ -334,7 +332,7 @@ public class EnemiesReceiveDamage : MonoBehaviour {
                 {
                     damageTaken = Mathf.Round(damageTaken * 1.0f) / 1.0f;
                     InitCBT(damageTaken.ToString()).GetComponent<Animator>().SetTrigger("Hit");
-                    hp += damageTaken;
+                    hp -= damageTaken;
                     calculator = hp / maxHp;
                     SetHealth(calculator);
                     criticalHit = 2;
@@ -368,5 +366,19 @@ public class EnemiesReceiveDamage : MonoBehaviour {
         //"myHealth" needs to be set between the values of 0 and 1: 1 being 100%.
         healthBar.transform.localScale = new Vector3(myHealth, healthBar.transform.localScale.y, healthBar.transform.localScale.z);
         healthBar.color = Color.Lerp(endColor, startColor, calculator);
+    }
+
+    void FreezeEnemy()
+    {
+        if(gameObject.tag == "Enemy")
+        {
+            gameObject.GetComponent<AISmall>().movingSpeed = 2;
+            frozen = true;
+        }        
+    }
+
+    void ThawEnemy()
+    {
+        gameObject.GetComponent<AISmall>().movingSpeed = 8;
     }
 }
