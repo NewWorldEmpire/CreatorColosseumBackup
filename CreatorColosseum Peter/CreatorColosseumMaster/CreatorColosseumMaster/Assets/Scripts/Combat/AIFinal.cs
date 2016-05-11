@@ -62,6 +62,7 @@ public class AIFinal : MonoBehaviour {
 	Vector2  bigLaserPoint = new Vector2 (-120, -45);
 	
 	public GameObject 	_laser;
+	public GameObject	_face;
 	
 	public Collider2D	smallLaserCollider;
 	public Collider2D	bigLaserCollider;
@@ -312,7 +313,7 @@ public class AIFinal : MonoBehaviour {
 		
 		_laser.GetComponent<LineRenderer>().SetWidth (2, 2);
 		
-		_laser.GetComponent<LineRenderer> ().SetPosition (0, facePosition);
+		_laser.GetComponent<LineRenderer> ().SetPosition (0, _face.transform.position);
 		_laser.GetComponent<LineRenderer> ().SetPosition (1, playerPosition);
 		smallLaserCollider.transform.position = playerPosition;
 	}
