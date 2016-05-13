@@ -45,6 +45,8 @@ public class AIFinal : MonoBehaviour {
 	public int		topDivider;
 	public int		bottomDivider;
 	int		laserNum = 1;
+
+	public float	emilResetSpeed;
 	
 		//---------small laser--------
 	public float	smallLaserDelay;
@@ -60,7 +62,8 @@ public class AIFinal : MonoBehaviour {
 	Vector2	facePosition;
 	Vector2 tempVector;
 	Vector2  bigLaserPoint = new Vector2 (-120, -45);
-	
+
+	public GameObject emilResetPoint;
 	public GameObject 	_laser;
 	public GameObject	_face;
 	
@@ -76,6 +79,7 @@ public class AIFinal : MonoBehaviour {
 	public bool		yReached = true;
 	private bool 	isMikeStart	 = true;
 	private bool 	isSethStart	 = true;
+	private bool	isEmilStart  = true;
 
 	// Use this for initialization
 	void Start () 
@@ -104,7 +108,10 @@ public class AIFinal : MonoBehaviour {
 		} 
 		else 
 		{
-			EmilPhase();
+			if (isEmilStart)
+				EmilStart();
+			else
+				EmilPhase();
 		}
 	}
 
@@ -240,6 +247,17 @@ public class AIFinal : MonoBehaviour {
 	}
 
 //=========================Emil PHASE===================================
+	void EmilStart()
+	{
+		MovePhase (emilResetPoint.transform.position, emilResetSpeed);
+
+		if (xReached && yReached) 
+		{
+			isEmilStart = false;
+		}
+
+	}
+
 	void EmilPhase()
 	{
 		if (laserNum == 1 || laserNum == 2)
@@ -369,6 +387,25 @@ public class AIFinal : MonoBehaviour {
 		{
 			transform.position += transform.right * 0;
 			xReached = true;
+		}
+	}
+//=================OnCollision===============
+	void OnCollisionStay2D(Collision2D playerC)
+	{
+		if (this.gameObject.GetComponent<EnemiesReceiveDamage> ().hp > 
+			(this.gameObject.GetComponent<EnemiesReceiveDamage> ().maxHp * .333))
+		{
+			if (isAttack) 
+			{ 
+				armor = _player.GetComponent<CombatScript> ().armor;
+				_player.GetComponent<PlayerReceivesDamage> ().InitiateCBT (chargeDamage.ToString ()).GetComponent<Animator> ().SetTrigger ("Hit"); //changed playerReceivesDamge
+				
+				if (armor < chargeDamage) 
+				{
+					_player.GetComponent<CombatScript> ().health -= (chargeDamage - armor);
+				}
+				
+			}
 		}
 	}
 }
